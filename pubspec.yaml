@@ -23,9 +23,11 @@ flutter:
   assets:
     - assets/AIQ_LOGO.png
     - assets/Avion-one.png
+<<<<<<< HEAD
     - assets/Avion-bg.png
     - assets/Avion-bg2.png
     - assets/Avion-bg3.png
+=======
     - assets/airbus.png
     - assets/derrames_form.png
     
