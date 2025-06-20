@@ -850,7 +850,7 @@ class _AIQOPSF005ScreenState extends State<AIQOPSF005Screen> {
                   ),
                 ),
               ),
-              IconButton(
+              IconButton( //para web lo agarra de la compu 
                 icon: const Icon(Icons.camera_alt, color: Color(0xFF263A5B)),
                 onPressed: () async {
                   final ImagePicker picker = ImagePicker();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:interfaz_uno_aiq/AIQ-AMB-F-005.dart';
 import 'package:interfaz_uno_aiq/AIQ-OPS-F008.dart';
 import 'package:interfaz_uno_aiq/AIQ-OPS-F007.dart';
 import 'package:interfaz_uno_aiq/AIQ-OPS-F005.dart';
@@ -58,8 +59,12 @@ class _FormularioScreenState extends State<FormularioScreen> {
       "titulo": "FORMULARIO DE FAUNA Y HABITAD",
       "codigo": "AIQ-AMB-F-002",
       "imagen": "assets/AIQ-AMB-F-002-FORM-PREVIEW.jpg",
+    },
+    {
+      "titulo": "MONITOREO DE AERONAVES",
+      "codigo": "AIQ-AMB-F-005",
+      "imagen": "assets/AIQ-AMB-F-005-FORM-PREVIEW.jpg",
     }
-     
   ];
 
   int _currentIndex = 0;
@@ -210,6 +215,11 @@ class _FormularioScreenState extends State<FormularioScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const AIQAMBF002Screen()),
+                          );
+                        } else if (index == 8) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AIQAMBF005Screen()),
                           );
                         }
                       },

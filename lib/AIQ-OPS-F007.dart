@@ -64,20 +64,60 @@ class AIQOPSF007Screen extends StatefulWidget {
 }
 
 class _AIQOPSF007ScreenState extends State<AIQOPSF007Screen> {
+
+ int consecutivoMostrado = 1;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-  TextEditingController fechaController = TextEditingController();
+  final TextEditingController fechaController = TextEditingController();
   TextEditingController horaController = TextEditingController();
   TextEditingController observacionesGeneralesController = TextEditingController();
   TextEditingController enteradoNombreController = TextEditingController();
   TextEditingController enteradoFechaController = TextEditingController();
   final SignatureController enteradoFirmaController = SignatureController(penStrokeWidth: 4, penColor: Colors.black);
 
+
+
+Future<void> incrementarFolio() async {
+  final prefs = await SharedPreferences.getInstance();
+  folio++;
+  await prefs.setInt('folio_f007', folio);
+}
+
+String get folioGenerado {
+  if (selectedDate == null) return "AIQOPSF007----/--/--$consecutivoMostrado";
+  final anio = selectedDate!.year.toString();
+  final mes = selectedDate!.month.toString().padLeft(2, '0');
+  final dia = selectedDate!.day.toString().padLeft(2, '0');
+  return "AIQOPSF007-$anio-$mes-$dia-$consecutivoMostrado";
+}
+
+Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
+  final dia = fecha.day.toString().padLeft(2, '0');
+  final mes = fecha.month.toString().padLeft(2, '0');
+  final anio = fecha.year.toString();
+  final fechaStr = "$dia/$mes/$anio";
+
+  final snapshot = await FirebaseFirestore.instance
+      .collection('AIQ-OPS-F007')
+      .where('fecha', isEqualTo: fechaStr)
+      .get();
+
+  return snapshot.docs.length + 1;
+}
+//....  
+ 
+  
+ 
+
+
+
   // Mapa para guardar la selección de cada ítem
   final Map<String, String> _selecciones = {};
 
   int _inspeccionSeleccionada = 1;
   int folio = 1;
+  
+  get padding => null;
 
   @override
   void dispose() {
@@ -160,7 +200,24 @@ class _AIQOPSF007ScreenState extends State<AIQOPSF007Screen> {
                         ],
                       ),
                     ),
-
+                 Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    margin: const EdgeInsets.only(top: 5, bottom: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Color(0xFF598CBC)),
+                    ),
+                    child: Text(
+                      folioGenerado,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF263A5B),
+                        fontSize: 14,
+                        fontFamily: 'Avenir',
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Container(
                     decoration: BoxDecoration(
@@ -207,16 +264,90 @@ class _AIQOPSF007ScreenState extends State<AIQOPSF007Screen> {
                           ],
                         ),
 
-                        Row(
+                          Row(   
                           children: [
                             Expanded(
-                              child: buildDateField("Fecha de la inspección", controller: fechaController, isTime: false),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: TextField(
+                                  controller: fechaController,
+                                  readOnly: true,
+                                  cursorColor: const Color(0xFF263A5B),
+                                  style: const TextStyle(color: Color(0xFF263A5B)),
+                                  decoration: const InputDecoration(
+                                    labelText: "Fecha/Hora de Notificación",
+                                    labelStyle: TextStyle(color: Colors.grey),
+                                    icon: Icon(Icons.calendar_today, color: Colors.grey),
+                                    border: InputBorder.none,
+                                  ),
+                                //Folio PASO 2: Seleccion de Fecha y Actualizacion de folio
+                                onTap: () async {
+                                  FocusScope.of(context).requestFocus(FocusNode());
+                                  final fecha = await showDatePicker(
+                                    context: context,
+                                    initialDate: selectedDate ?? DateTime.now(),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
+                                  );
+                                  if (fecha != null) {
+                                    final consecutivo = await obtenerConsecutivoParaFecha(fecha);
+                                    setState(() {
+                                      selectedDate = fecha;
+                                      fechaController.text =
+                                          "${fecha.day.toString().padLeft(2, '0')}/"
+                                          "${fecha.month.toString().padLeft(2, '0')}/"
+                                          "${fecha.year}";
+                                      consecutivoMostrado = consecutivo;
+                                    });
+                                  }
+                                },
+                                //....
+                                ),
+                                
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: buildDateField("Hora Local", controller: horaController, isTime: true),
+                          ),
+
+                          //Hora de llegada al lugar
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: TextField(
+                                controller: horaController,
+                                readOnly: true,
+                                cursorColor: const Color(0xFF263A5B),
+                                style: const TextStyle(color: Color(0xFF263A5B)),
+                                decoration: const InputDecoration(
+                                  labelText: "Hora de llegada",
+                                  labelStyle: TextStyle(color: Colors.grey),
+                                  icon: Icon(Icons.access_time, color: Colors.grey),
+                                  border: InputBorder.none,
+                                ),
+                                onTap: () async {
+                                  FocusScope.of(context).requestFocus(FocusNode());
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedTime ?? TimeOfDay.now(),
+                                  );
+                                  if (picked != null) {
+                                    setState(() {
+                                      selectedTime = picked;
+                                      horaController.text = picked.format(context);
+                                    });
+                                  }
+                                },
+                              ),
                             ),
-                          ],
+                          ),
+                        ],
                         ),
                       ],
                     ),
@@ -520,52 +651,6 @@ class _AIQOPSF007ScreenState extends State<AIQOPSF007Screen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget buildDateField(String label, {required TextEditingController controller, bool isTime = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: TextField(
-        controller: controller,
-        readOnly: true,
-        decoration: InputDecoration(
-          labelText: label,
-          icon: isTime ? const Icon(Icons.access_time) : const Icon(Icons.calendar_today),
-          border: InputBorder.none,
-        ),
-        onTap: () async {
-          if (isTime) {
-            final TimeOfDay? pickedTime = await showTimePicker(
-              context: context,
-              initialTime: TimeOfDay.now(),
-            );
-            if (pickedTime != null) {
-              setState(() {
-                selectedTime = pickedTime;
-                controller.text = pickedTime.format(context);
-              });
-            }
-          } else {
-            final DateTime? pickedDate = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2020),
-              lastDate: DateTime(2100),
-            );
-            if (pickedDate != null) {
-              setState(() {
-                selectedDate = pickedDate;
-                controller.text = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-              });
-            }
-          }
-        },
-      ),
     );
   }
 
@@ -1353,8 +1438,11 @@ Future<void> exportarPDF() async {
 }
 
   Future<void> guardarFormularioF007() async {
-  await FirebaseFirestore.instance.collection('aiq_ops_f007').doc(folio.toString()).set({
-    'folio': folio,
+  await FirebaseFirestore.instance
+  .collection('AIQ-OPS-F007')
+  .doc(folioGenerado)
+  .set({
+    'folio': folioGenerado,
     'fecha': fechaController.text,
     'hora': horaController.text,
     'numero_inspeccion': _inspeccionSeleccionada,
@@ -1393,41 +1481,4 @@ Future<void> exportarPDF() async {
   await _incrementarFolio();
 }
 
-Future<void> guardarYExportarF007() async {
-  try {
-    // 1. Guarda en Firestore (un documento por folio)
-    await FirebaseFirestore.instance.collection('aiq_ops_f007').doc(folio.toString()).set({
-      'folio': folio,
-      'fecha': fechaController.text,
-      'hora': horaController.text,
-      'numero_inspeccion': _inspeccionSeleccionada,
-      'observaciones_generales': observacionesGeneralesController.text,
-      'selecciones': _selecciones,
-      'enterado_nombre': enteradoNombreController.text,
-      'enterado_fecha': enteradoFechaController.text,
-      'timestamp': FieldValue.serverTimestamp(),
-      // Puedes guardar la firma como base64 si lo deseas
-    });
-
-    // 2. Exporta a PDF
-    await exportarPDF();
-
-    // 3. Incrementa el folio para el siguiente formulario
-    await _incrementarFolio();
-
-    // 4. Mensaje de éxito
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Formulario guardado y exportado correctamente')),
-      );
-    }
-  } catch (e, st) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar/exportar: $e')),
-      );
-    }
-    print('Error al guardar/exportar: $e\n$st');
-  }
-}
 }

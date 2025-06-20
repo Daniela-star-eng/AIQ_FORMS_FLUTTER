@@ -382,7 +382,7 @@ class _AIQAMBF001ScreenState extends State<AIQAMBF001Screen> {
     final fechaHoy = "${DateTime.now().day.toString().padLeft(2, '0')}/"
         "${DateTime.now().month.toString().padLeft(2, '0')}/"
         "${DateTime.now().year}";
-    const folderId = '10xo5X1yi4DZPb5s8w-sLHNs9w2EslxGp'; // <-- Cambia esto por el ID de tu carpeta de Drive
+    const folderId = '10xo5X1yi4DZPb5s8w-sLHNs9w2EslxGp'; // ID carpeta de Drive
     try {
       final folioGenerado = await generarFolio();
       await guardarEnFirestore(fechaHoy, folioGenerado);
@@ -608,7 +608,6 @@ class _AIQAMBF001ScreenState extends State<AIQAMBF001Screen> {
               ],
             ),
             const SizedBox(height: 16),
-
             // Selector de hora
             Text(
               "Hora del monitoreo",

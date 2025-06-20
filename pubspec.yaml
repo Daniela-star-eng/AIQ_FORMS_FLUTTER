@@ -27,6 +27,7 @@ dependencies:
   googleapis: ^13.1.0 
   googleapis_auth: ^1.4.0
   google_sign_in: ^6.2.1
+  universal_html: ^2.2.4
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +57,7 @@ flutter:
     - assets/AIQ-AMB-F-002-FORM-PREVIEW.jpg
     - assets/AIQ-AMB-F-004-FORM-PREVIEW.jpg
     - assets/AIQ-AMB-F-003-FORM-PREVIEW.jpg
+    - assets/AIQ-AMB-F-005-FORM-PREVIEW.jpg
 
   fonts:
     - family: Avenir

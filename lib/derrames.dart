@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:signature/signature.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -14,6 +15,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:universal_html/html.dart' as html;
 
 class GoogleAuthClient extends BaseClient {
   final Map<String, String> _headers;
@@ -40,6 +44,31 @@ class DerramesScreen extends StatefulWidget {
 }
 
 class _DerramesScreenState extends State<DerramesScreen> {
+  // Folio PASO 1:Variables para el folio
+int consecutivoMostrado = 1;
+DateTime? fechaSeleccionada;
+
+String get folioGenerado {
+  if (fechaSeleccionada == null) return "AIQOPSF013----/--/--$consecutivoMostrado";
+  final dia = fechaSeleccionada!.day.toString().padLeft(2, '0');
+  final mes = fechaSeleccionada!.month.toString().padLeft(2, '0');
+  final anio = fechaSeleccionada!.year.toString();
+  return "AIQOPSF013-$anio-$mes-$dia-$consecutivoMostrado";
+}
+
+Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
+  final dia = fecha.day.toString().padLeft(2, '0');
+  final mes = fecha.month.toString().padLeft(2, '0');
+  final anio = fecha.year.toString();
+  final fechaStr = "$dia/$mes/$anio";
+
+  final snapshot = await FirebaseFirestore.instance
+      .collection('AIQ-OPS-F013')
+      .where('fecha', isEqualTo: fechaStr)
+      .get();
+
+  return snapshot.docs.length + 1;
+}
   double criticidadValue = 1; // 0 = Bajo, 1 = Medio, 2 = Alto
   int areaAfectada = 0;
   int tiempoMinutos = 0; // <-- AGREGA ESTA LÍNEA
@@ -84,6 +113,9 @@ class _DerramesScreenState extends State<DerramesScreen> {
   final TextEditingController persona2NombreController = TextEditingController();
   final TextEditingController persona3NombreController = TextEditingController();
 
+  // Lista para almacenar las fotos de evidencia del derrame
+  final List<XFile> fotosDerrame = [];
+
   final _formKey = GlobalKey<FormState>();
   bool _errorUbicacion = false;
   bool _errorProducto = false;
@@ -95,12 +127,10 @@ class _DerramesScreenState extends State<DerramesScreen> {
   bool _errorPersonal = false;
   bool _errorObservaciones = false;
   bool _errorPersona1 = false;
-  bool _errorPersona2 = false;
   bool _errorPersona3 = false;
   bool _errorFirma1 = false;
-  bool _errorFirma2 = false;
   bool _errorFirma3 = false;
-  bool _errorVueloMatricula = false; // <-- Agrega esta línea
+  bool _errorVueloMatricula = false; 
 
   Color getSliderColor(double value) {
     if (value <= 1.5) {
@@ -178,6 +208,13 @@ class _DerramesScreenState extends State<DerramesScreen> {
       final firma2Bytes = await firma2Controller.isNotEmpty ? await firma2Controller.toPngBytes() : null;
       final firma3Bytes = await firma3Controller.isNotEmpty ? await firma3Controller.toPngBytes() : null;
 
+      // Convertir fotos de evidencia a imágenes (si existen)
+      final List<pw.MemoryImage> imagenesEvidencia = [];
+      for (final foto in fotosDerrame) {
+        final bytes = await foto.readAsBytes();
+        imagenesEvidencia.add(pw.MemoryImage(bytes));
+      }
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -269,6 +306,32 @@ class _DerramesScreenState extends State<DerramesScreen> {
                 ),
               ],
             ),
+
+            // Solo mostrar imágenes de evidencia si existen
+            if (imagenesEvidencia.isNotEmpty) ...[
+              pw.SizedBox(height: 16),
+              pw.Text('Evidencia fotográfica', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#263A5B'))),
+              pw.SizedBox(height: 8),
+              pw.Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: imagenesEvidencia.map((img) {
+                  return pw.Container(
+                    width: 120,
+                    height: 120,
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColor.fromHex('#263A5B'), width: 1),
+                      borderRadius: pw.BorderRadius.circular(8),
+                    ),
+                    child: pw.ClipRRect(
+                      horizontalRadius: 8,
+                      verticalRadius: 8,
+                      child: pw.Image(img, fit: pw.BoxFit.cover),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ],
         ),
       );
@@ -305,6 +368,13 @@ class _DerramesScreenState extends State<DerramesScreen> {
       final firma2Bytes = await firma2Controller.isNotEmpty ? await firma2Controller.toPngBytes() : null;
       final firma3Bytes = await firma3Controller.isNotEmpty ? await firma3Controller.toPngBytes() : null;
 
+      // Convertir fotos de evidencia a imágenes (si existen)
+      final List<pw.MemoryImage> imagenesEvidencia = [];
+      for (final foto in fotosDerrame) {
+        final bytes = await foto.readAsBytes();
+        imagenesEvidencia.add(pw.MemoryImage(bytes));
+      }
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -396,6 +466,32 @@ class _DerramesScreenState extends State<DerramesScreen> {
                 ),
               ],
             ),
+
+            // Solo mostrar imágenes de evidencia si existen
+            if (imagenesEvidencia.isNotEmpty) ...[
+              pw.SizedBox(height: 16),
+              pw.Text('Evidencia fotográfica', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#263A5B'))),
+              pw.SizedBox(height: 8),
+              pw.Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: imagenesEvidencia.map((img) {
+                  return pw.Container(
+                    width: 120,
+                    height: 120,
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColor.fromHex('#263A5B'), width: 1),
+                      borderRadius: pw.BorderRadius.circular(8),
+                    ),
+                    child: pw.ClipRRect(
+                      horizontalRadius: 8,
+                      verticalRadius: 8,
+                      child: pw.Image(img, fit: pw.BoxFit.cover),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ],
         ),
       );
@@ -424,9 +520,12 @@ class _DerramesScreenState extends State<DerramesScreen> {
     final areaAfectadaValue = int.tryParse(areaAfectadaController.text) ?? 0;
     final tiempoMinutosValue = int.tryParse(tiempoMinutosController.text) ?? 0;
 
-    await FirebaseFirestore.instance.collection('AIQ-SMS-F013').doc(nombreDocumento).set({
-      'folio': folio,
-      'fecha': fechaHoy, 
+    await FirebaseFirestore.instance
+    .collection('AIQ-OPS-F013')
+    .doc(folioGenerado)
+    .set({
+      'folio': folioGenerado,
+      'fecha': fechaHoraNotificacionController.text,
       'nombreNotifica': nombreNotificaController.text,
       'ubicacion': ubicacionSeleccionada,
       'especificarUbicacion': especificarUbicacionController.text,
@@ -438,16 +537,9 @@ class _DerramesScreenState extends State<DerramesScreen> {
         'Material Absorbente': cantidades[1],
         'Líquido Desengrasante': cantidades[2],
         'Agua': cantidades[3],
-      },
-      'areaAfectada': areaAfectadaValue,
-      'horasEmpleadas': horasEmpleadas,
-      'tiempoMinutos': tiempoMinutosValue,
-      'causaDerrame': causaController.text,
-      'personalVehiculos': personalController.text,
-      'observaciones': observacionesController.text,
-      'timestamp': FieldValue.serverTimestamp(),
-      // Puedes agregar más campos aquí si lo necesitas
-    });
+      }
+    }
+    );
   }
 
   String getCriticidadTexto(double value) {
@@ -469,16 +561,14 @@ class _DerramesScreenState extends State<DerramesScreen> {
       _errorProducto = productoSeleccionado == null || productoSeleccionado!.isEmpty;
       _errorNombreNotifica = nombreNotificaController.text.trim().isEmpty;
       _errorAreaAfectada = areaAfectadaController.text.trim().isEmpty;
-      _errorHorasEmpleadas = horasEmpleadas == 0;
+      _errorHorasEmpleadas = areaAfectadaController.text.trim().isEmpty; //Funciona para poder poner en cero el campo de Tiempo empleado. se puede quitar si no queremos validar horas. 
       _errorTiempoMinutos = tiempoMinutosController.text.trim().isEmpty;
       _errorCausa = causaController.text.trim().isEmpty;
       _errorPersonal = personalController.text.trim().isEmpty;
       _errorObservaciones = observacionesController.text.trim().isEmpty;
       _errorPersona1 = persona1NombreController.text.trim().isEmpty;
-      _errorPersona2 = persona2NombreController.text.trim().isEmpty;
       _errorPersona3 = persona3NombreController.text.trim().isEmpty;
       _errorFirma1 = firma1Controller.isEmpty;
-      _errorFirma2 = firma2Controller.isEmpty;
       _errorFirma3 = firma3Controller.isEmpty;
       _errorVueloMatricula = vueloMatriculaController.text.trim().isEmpty;
     });
@@ -493,10 +583,8 @@ class _DerramesScreenState extends State<DerramesScreen> {
         _errorPersonal ||
         _errorObservaciones ||
         _errorPersona1 ||
-        _errorPersona2 ||
         _errorPersona3 ||
         _errorFirma1 ||
-        _errorFirma2 ||
         _errorFirma3 ||
         _errorVueloMatricula) {
       if (!mounted) return;
@@ -520,115 +608,208 @@ class _DerramesScreenState extends State<DerramesScreen> {
   }
 
   Future<File?> _generarPDFyGuardar() async {
-    try {
-      final pdf = pw.Document();
-      final logoBytes = await rootBundle.load('assets/AIQ_LOGO_.png');
-      final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+  try {
+    final pdf = pw.Document();
+    final logoBytes = await rootBundle.load('assets/AIQ_LOGO_.png');
+    final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
-      // Convertir firmas a imágenes (si existen)
-      final firma1Bytes = await firma1Controller.isNotEmpty ? await firma1Controller.toPngBytes() : null;
-      final firma2Bytes = await firma2Controller.isNotEmpty ? await firma2Controller.toPngBytes() : null;
-      final firma3Bytes = await firma3Controller.isNotEmpty ? await firma3Controller.toPngBytes() : null;
+    // Convertir firmas a imágenes (si existen)
+    final firma1Bytes = await firma1Controller.isNotEmpty ? await firma1Controller.toPngBytes() : null;
+    final firma2Bytes = await firma2Controller.isNotEmpty ? await firma2Controller.toPngBytes() : null;
+    final firma3Bytes = await firma3Controller.isNotEmpty ? await firma3Controller.toPngBytes() : null;
 
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(50),
-          build: (pw.Context context) => [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Image(logoImage, width: 90),
-              ],
-            ),
-            pw.SizedBox(height: 4),
-            pw.Header(
-              level: 0,
-              child: pw.Text(
-                'NEUTRALIZACION Y LIMPIEZA DE DERRAMES',
-                style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+    // Convertir fotos a imágenes para el PDF
+    final List<pw.MemoryImage> imagenesEvidencia = [];
+    for (final foto in fotosDerrame) {
+      final bytes = await foto.readAsBytes();
+      imagenesEvidencia.add(pw.MemoryImage(bytes));
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) => [
+          // Encabezado con logo y título
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Image(logoImage, width: 80),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'AIQ-SMS-F013',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromHex('#263A5B'),
+                    ),
+                  ),
+                  pw.Text(
+                    'NEUTRALIZACIÓN Y LIMPIEZA DE DERRAMES',
+                    style: pw.TextStyle(
+                      fontSize: 14,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromHex('#598CBC'),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            pw.SizedBox(height: 4),
-            pw.Text('Folio: $folio    Fecha: $fechaHoy', style: pw.TextStyle(fontSize: 11)),
-            pw.Divider(),
+            ],
+          ),
+          pw.SizedBox(height: 12),
+          pw.Divider(thickness: 1.2, color: PdfColor.fromHex('#263A5B')),
+          pw.SizedBox(height: 8),
 
-            pw.Text('Nombre de quien notifica: ${nombreNotificaController.text}', style: pw.TextStyle(fontSize: 12)),
-            pw.Text('Ubicación: ${ubicacionSeleccionada ?? ""}', style: pw.TextStyle(fontSize: 12)),
-            if (ubicacionSeleccionada == 'Otro')
-              pw.Text('Especificar ubicación: ${especificarUbicacionController.text}', style: pw.TextStyle(fontSize: 12)),
-
-            pw.SizedBox(height: 8),
-            pw.Text('Criticidad: ${getCriticidadTexto(criticidadValue)}', style: pw.TextStyle(fontSize: 12)),
-            pw.Text('Producto Derramado: ${productoSeleccionado ?? ""}', style: pw.TextStyle(fontSize: 12)),
-            if (productoSeleccionado == 'Otro')
-              pw.Text('Especificar producto: ${especificarProductoController.text}', style: pw.TextStyle(fontSize: 12)),
-            pw.Text('Originado por: ${originadoPorController.text}', style: pw.TextStyle(fontSize: 12)),
-            pw.Text('Vuelo/Matrícula/etc: ${vueloMatriculaController.text}', style: pw.TextStyle(fontSize: 12)),
-
-            pw.SizedBox(height: 8),
-            pw.Text('Materiales Utilizados', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
-            pw.Table.fromTextArray(
-              headers: ['Espuma', 'Absorbente', 'Desengrasante', 'Agua'],
-              data: [
-                [
-                  '${cantidades[0]} lt',
-                  '${cantidades[1]} kg',
-                  '${cantidades[2]} lt',
-                  '${cantidades[3]} lt',
-                ]
-              ],
-            ),
-
-            pw.SizedBox(height: 8),
-            pw.Text('Área afectada: ${areaAfectadaController.text} m²', style: pw.TextStyle(fontSize: 12)),
-            pw.Text('Tiempo empleado: ${horasEmpleadas} h ${tiempoMinutosController.text} min', style: pw.TextStyle(fontSize: 12)),
-
-            pw.SizedBox(height: 8),
-            pw.Text('Causa del derrame:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
-            pw.Text(causaController.text, style: pw.TextStyle(fontSize: 12)),
-
-            pw.SizedBox(height: 8),
-            pw.Text('Personal y vehículos que atienden:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
-            pw.Text(personalController.text, style: pw.TextStyle(fontSize: 12)),
-
-            pw.SizedBox(height: 8),
-            pw.Text('Observaciones / Comentarios:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
-            pw.Text(observacionesController.text, style: pw.TextStyle(fontSize: 12)),
-
-            pw.SizedBox(height: 16),
-            pw.Text('Firmas', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+          // Folio y fecha
+          pw.Container(
+            color: PdfColor.fromHex('#C2C8D9'),
+            padding: const pw.EdgeInsets.all(8),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Column(
-                  children: [
-                    pw.Text('Oficial/Operaciones:\n${persona1NombreController.text}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10)),
-                    if (firma1Bytes != null) pw.Image(pw.MemoryImage(firma1Bytes), width: 60, height: 30),
+                pw.Text('Folio: $folio', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text('Fecha: $fechaHoy', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 12),
+
+          // Sección: Datos de notificación
+          pw.Container(
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('#E8EAF2'),
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            padding: const pw.EdgeInsets.all(10),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Datos de Notificación', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#263A5B'))),
+                pw.SizedBox(height: 4),
+                pw.Text('Nombre de quien notifica: ${nombreNotificaController.text}'),
+                pw.Text('Ubicación: ${ubicacionSeleccionada ?? ""}'),
+                if (ubicacionSeleccionada == 'Otro')
+                  pw.Text('Especificar ubicación: ${especificarUbicacionController.text}'),
+                pw.Text('Fecha/Hora de Notificación: ${fechaHoraNotificacionController.text}'),
+                pw.Text('Hora de llegada: ${horaLlegadaController.text}'),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 10),
+
+          // Sección: Datos del Derrame
+          pw.Container(
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('#C2C8D9'),
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            padding: const pw.EdgeInsets.all(10),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Datos del Derrame', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#263A5B'))),
+                pw.SizedBox(height: 4),
+                pw.Text('Criticidad: ${getCriticidadTexto(criticidadValue)}'),
+                pw.Text('Producto Derramado: ${productoSeleccionado ?? ""}'),
+                if (productoSeleccionado == 'Otro')
+                  pw.Text('Especificar producto: ${especificarProductoController.text}'),
+                pw.Text('Originado por: ${originadoPorController.text}'),
+                pw.Text('Vuelo/Matrícula/etc: ${vueloMatriculaController.text}'),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 10),
+
+          // Sección: Materiales Utilizados
+          pw.Container(
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('#E8EAF2'),
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            padding: const pw.EdgeInsets.all(10),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Materiales Utilizados', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#263A5B'))),
+                pw.SizedBox(height: 4),
+                pw.Table.fromTextArray(
+                  headers: ['Espuma', 'Absorbente', 'Desengrasante', 'Agua'],
+                  data: [
+                    [
+                      '${cantidades[0]} lt',
+                      '${cantidades[1]} kg',
+                      '${cantidades[2]} lt',
+                      '${cantidades[3]} lt',
+                    ]
                   ],
-                ),
-                pw.Column(
-                  children: [
-                    pw.Text('Personal SSEI:\n${persona2NombreController.text}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10)),
-                    if (firma2Bytes != null) pw.Image(pw.MemoryImage(firma2Bytes), width: 60, height: 30),
-                  ],
-                ),
-                pw.Column(
-                  children: [
-                    pw.Text('Empresa:\n${persona3NombreController.text}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10)),
-                    if (firma3Bytes != null) pw.Image(pw.MemoryImage(firma3Bytes), width: 60, height: 30),
-                  ],
+                  headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#263A5B')),
+                  headerDecoration: pw.BoxDecoration(color: PdfColor.fromHex('#C2C8D9')),
+                  cellAlignment: pw.Alignment.center,
+                  cellStyle: pw.TextStyle(fontSize: 11),
                 ),
               ],
             ),
-          ],
-        ),
-      );
+          ),
+          pw.SizedBox(height: 10),
 
-      final output = await getTemporaryDirectory();
-      final file = File('${output.path}/$nombreDocumento.pdf');
-      await file.writeAsBytes(await pdf.save());
-      return file;
+          // Sección: Área, tiempo, causa, personal, observaciones
+                pw.Container(
+                  decoration: pw.BoxDecoration(
+                    color: PdfColor.fromHex('#C2C8D9'),
+                    borderRadius: pw.BorderRadius.circular(8),
+                  ),
+                  padding: const pw.EdgeInsets.all(10),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('Área afectada: ${areaAfectadaController.text} m²', style: pw.TextStyle(fontSize: 12)),
+                      pw.Text('Tiempo empleado: ${horasEmpleadas} h ${tiempoMinutosController.text} min', style: pw.TextStyle(fontSize: 12)),
+
+                      pw.SizedBox(height: 8),
+                      pw.Text('Causa del derrame:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                      pw.Text(causaController.text, style: pw.TextStyle(fontSize: 12)),
+
+                      pw.SizedBox(height: 8),
+                      pw.Text('Personal y vehículos que atienden:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                      pw.Text(personalController.text, style: pw.TextStyle(fontSize: 12)),
+
+                      pw.SizedBox(height: 8),
+                      pw.Text('Observaciones / Comentarios:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                      pw.Text(observacionesController.text, style: pw.TextStyle(fontSize: 12)),
+
+                      pw.SizedBox(height: 16),
+                      pw.Text('Firmas', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                        children: [
+                          pw.Column(
+                            children: [
+                              pw.Text('Oficial/Operaciones:\n${persona1NombreController.text}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10)),
+                              if (firma1Bytes != null) pw.Image(pw.MemoryImage(firma1Bytes), width: 60, height: 30),
+                            ],
+                          ),
+                          pw.Column(
+                            children: [
+                              pw.Text('Personal SSEI:\n${persona2NombreController.text}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10)),
+                              if (firma2Bytes != null) pw.Image(pw.MemoryImage(firma2Bytes), width: 60, height: 30),
+                            ],
+                          ),
+                          pw.Column(
+                            children: [
+                              pw.Text('Empresa:\n${persona3NombreController.text}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 10)),
+                              if (firma3Bytes != null) pw.Image(pw.MemoryImage(firma3Bytes), width: 60, height: 30),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -752,7 +933,7 @@ class _DerramesScreenState extends State<DerramesScreen> {
                     ),
                   ),
                   const Text(
-                    "AIQ-SMS-F013",
+                    "AIQ-OPS-F013",
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
@@ -762,6 +943,25 @@ class _DerramesScreenState extends State<DerramesScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
+
+                  Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  margin: const EdgeInsets.only(top: 5, bottom: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Color(0xFF598CBC)),
+                  ),
+                  child: Text(
+                    folioGenerado,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF263A5B),
+                      fontSize: 14,
+                      fontFamily: 'Avenir',
+                    ),
+                  ),
+                ),
 
                   // Datos de notificación
                   Container(
@@ -829,36 +1029,29 @@ class _DerramesScreenState extends State<DerramesScreen> {
                                     border: InputBorder.none,
                                   ),
                                   onTap: () async {
-                                    FocusScope.of(context).requestFocus(FocusNode()); // Quita el teclado
-                                    final fecha = await showDatePicker(
-                                      context: context,
-                                      initialDate: fechaHoraNotificacion ?? DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2100),
-                                    );
-                                    if (fecha != null) {
-                                      final hora = await showTimePicker(
-                                        context: context,
-                                        initialTime: TimeOfDay.fromDateTime(fechaHoraNotificacion ?? DateTime.now()),
-                                      );
-                                      if (hora != null) {
-                                        final seleccionada = DateTime(
-                                          fecha.year, fecha.month, fecha.day, hora.hour, hora.minute,
-                                        );
-                                        setState(() {
-                                          fechaHoraNotificacion = seleccionada;
-                                          fechaHoraNotificacionController.text =
-                                              "${fecha.day.toString().padLeft(2, '0')}/"
-                                              "${fecha.month.toString().padLeft(2, '0')}/"
-                                              "${fecha.year} ${hora.format(context)}";
-                                        });
-                                      }
-                                    }
-                                  },
+                                  FocusScope.of(context).requestFocus(FocusNode());
+                                  final fecha = await showDatePicker(
+                                    context: context,
+                                    initialDate: fechaSeleccionada ?? DateTime.now(),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
+                                  );
+                                  if (fecha != null) {
+                                    final consecutivo = await obtenerConsecutivoParaFecha(fecha);
+                                    setState(() {
+                                      fechaSeleccionada = fecha;
+                                      fechaHoraNotificacionController.text =
+                                          "${fecha.day.toString().padLeft(2, '0')}/"
+                                          "${fecha.month.toString().padLeft(2, '0')}/"
+                                          "${fecha.year}";
+                                      consecutivoMostrado = consecutivo;
+                                    });
+                                  }
+                                },
                                 ),
-                                
+                              ),
                             ),
-                          ),
+
 
                           //Hora de llegada al lugar
                           const SizedBox(width: 8),
@@ -973,7 +1166,7 @@ class _DerramesScreenState extends State<DerramesScreen> {
                               ),
                               errorText: _errorUbicacion ? 'Campo obligatorio' : null,
                             ),
-                            items: ['Plataforma', 'Pista', 'Rodaje', 'Hangares','Otro']
+                            items: ['Plataforma', 'Pista', 'Rodaje', 'Hangares', 'Otro']
                                 .map((opcion) => DropdownMenuItem(
                                       value: opcion,
                                       child: Text(opcion),
@@ -988,7 +1181,7 @@ class _DerramesScreenState extends State<DerramesScreen> {
                             style: const TextStyle(color: Color(0xFF263A5B)),
                           ),
                         ),
-                        if (ubicacionSeleccionada == 'Otro')
+                        if (ubicacionSeleccionada != null)
                           Padding(
                             padding: const EdgeInsets.only(top: 12.0),
                             child: Container(
@@ -1091,6 +1284,7 @@ class _DerramesScreenState extends State<DerramesScreen> {
                         ),
                         const SizedBox(height: 8),
 
+                        
                         // Campo: Líquido Derramado
                         Container(
                           decoration: BoxDecoration(
@@ -1151,6 +1345,8 @@ class _DerramesScreenState extends State<DerramesScreen> {
                             ],
                           ),
                         ),
+
+                        
 
                         // Campo: Originado por...
                         Container(
@@ -1793,6 +1989,76 @@ class _DerramesScreenState extends State<DerramesScreen> {
                       ],
                     ),
                   ),
+
+                   const Text(
+                    "Evidencia fotográfica",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF263A5B),
+                   
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt, color: Color(0xFF263A5B)),
+                    onPressed: () async {
+                      final ImagePicker picker = ImagePicker();
+                      final XFile? foto = await picker.pickImage(source: ImageSource.camera);
+                      if (foto != null) {
+                        setState(() {
+                          fotosDerrame.add(foto);
+                        });
+                      }
+                    },
+                    tooltip: 'Tomar o seleccionar foto',
+                  ),
+                  const SizedBox(height: 8),
+                  // Mostrar miniaturas de las fotos tomadas/seleccionadas
+                  Wrap(
+                    spacing: 8,
+                    children: fotosDerrame.map((foto) {
+                      return FutureBuilder(
+                        future: foto.readAsBytes(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                            return GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => Dialog(
+                                    backgroundColor: Colors.black,
+                                    child: InteractiveViewer(
+                                      panEnabled: true,
+                                      minScale: 0.5,
+                                      maxScale: 4,
+                                      child: Image.memory(
+                                        snapshot.data as Uint8List,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Image.memory(
+                                snapshot.data as Uint8List,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          }
+                          return const SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
                   const SizedBox(height: 24),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1856,17 +2122,19 @@ class _DerramesScreenState extends State<DerramesScreen> {
                       const SizedBox(height: 24),
 
                       // Personal del SSEI
-                      const Text(
-                        "Nombre y Firma del Personal del SSEI",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Color(0xFF263A5B),
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
+                     // Personal del SSEI
+const Text(
+  "Nombre y Firma del Personal del SSEI",
+  style: TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 14,
+    color: Color(0xFF263A5B),
+  ),
+  textAlign: TextAlign.left,
+),
+const SizedBox(height: 6),
+                  TextField(
+                        controller: persona2NombreController,
                         decoration: InputDecoration(
                           hintText: "Nombre",
                           hintStyle: TextStyle(color: Colors.grey[500]),
@@ -1877,36 +2145,32 @@ class _DerramesScreenState extends State<DerramesScreen> {
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide.none,
                           ),
-                        ),
-                        controller: persona2NombreController,
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Signature(
-                          controller: firma2Controller,
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => firma2Controller.clear(),
-                        child: const Text("Limpiar", style: TextStyle(fontSize: 12)),
-                      ),
-                      if (_errorFirma2)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0, top: 2.0),
-                          child: Text(
-                            'Firma obligatoria',
-                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: _errorPersona1 ? Colors.red : Colors.transparent,
+                            ),
                           ),
+                          errorText: _errorPersona1 ? 'Campo obligatorio' : null,
                         ),
-                      const SizedBox(height: 24),
-
-                      // Representante de la empresa involucrada
+                      ),
+const SizedBox(height: 8),
+Container(
+  height: 80,
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(width: 0, color: Colors.white), // Sin borde visible
+    boxShadow: [], // Sin sombra
+  ),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(8),
+    child: Signature(
+      controller: firma2Controller,
+      backgroundColor: Colors.white,
+    ),
+  ),
+),                      // Representante de la empresa involucrada
                       const Text(
                         "Representante de la empresa involucrada",
                         style: TextStyle(
@@ -1959,12 +2223,14 @@ class _DerramesScreenState extends State<DerramesScreen> {
                   ),
                   const SizedBox(height: 30),
 
+
                   Center(
                     child: ElevatedButton(
                       onPressed: guardarYExportar,
+                     
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF598CBC),
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical:  16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       child: const Text(
@@ -2008,3 +2274,27 @@ class _DerramesScreenState extends State<DerramesScreen> {
     );
   }
 }
+
+//darle estilos al pdf de formularios
+//Como compartir pdf en web
+Future<void> compartirPDFWeb(BuildContext context, pw.Document pdf, String nombreArchivo) async {
+  if (kIsWeb) {
+    final bytes = await pdf.save();
+    final blob = html.Blob([bytes], 'application/pdf');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', nombreArchivo)
+      ..click();
+
+    html.Url.revokeObjectUrl(url);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('PDF descargado. Adjunta el archivo a tu correo.')),
+    );
+  }
+}
+
+//que en la parte de "otros" de items: ['Plataforma', 'Pista', 'Rodaje', 'Hangares','Otro'] al elegir cualquier opcion se pueda desplegar textfield que diga "especifique" 
+//que en la hora de cuánto tiempo tardó se pueda quedar en cero
+//Agregar función de hora de llegada y de notificación. El folio solo tiene la fecha 

@@ -81,6 +81,8 @@ Future<String?> subirPDFaDriveEnCarpeta(File pdfFile, String folderId) async {
 }
 
 class _AIQOPSF008ScreenState extends State<AIQOPSF008Screen> {
+  
+  int consecutivoMostrado = 1;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   TextEditingController fechaController = TextEditingController();
@@ -89,6 +91,52 @@ class _AIQOPSF008ScreenState extends State<AIQOPSF008Screen> {
   final TextEditingController enteradoNombreController = TextEditingController();
   DateTime? enteradoFecha;
   final TextEditingController enteradoFechaController = TextEditingController();
+
+      
+    Future<void> incrementarFolio() async {
+      final prefs = await SharedPreferences.getInstance();
+      folio++;
+      await prefs.setInt('folio_f008', folio);
+    }
+
+    String get folioGenerado {
+      if (selectedDate == null) return "AIQOPSF008----/--/--$consecutivoMostrado";
+      final anio = selectedDate!.year.toString();
+      final mes = selectedDate!.month.toString().padLeft(2, '0');
+      final dia = selectedDate!.day.toString().padLeft(2, '0');
+      return "AIQOPSF008-$anio-$mes-$dia-$consecutivoMostrado";
+    }
+
+    Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
+      final dia = fecha.day.toString().padLeft(2, '0');
+      final mes = fecha.month.toString().padLeft(2, '0');
+      final anio = fecha.year.toString();
+      final fechaStr = "$dia/$mes/$anio";
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('AIQ-OPS-F008')
+          .where('fecha', isEqualTo: fechaStr)
+          .get();
+
+      return snapshot.docs.length + 1;
+    }
+
+
+
+Future<void> _cargarFolio() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      folio = prefs.getInt('folio_f008') ?? 1;
+    });
+  }
+
+  Future<void> _incrementarFolio() async {
+    final prefs = await SharedPreferences.getInstance();
+    folio++;
+    await prefs.setInt('folio_f008', folio);
+    setState(() {}); // Para actualizar el UI
+  }
+
 
   // Mapa para guardar la selección de cada ítem
   final Map<String, String> _selecciones = {};
@@ -120,20 +168,6 @@ class _AIQOPSF008ScreenState extends State<AIQOPSF008Screen> {
   void initState() {
     super.initState();
     _cargarFolio();
-  }
-
-  Future<void> _cargarFolio() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      folio = prefs.getInt('folio_f008') ?? 1;
-    });
-  }
-
-  Future<void> _incrementarFolio() async {
-    final prefs = await SharedPreferences.getInstance();
-    folio++;
-    await prefs.setInt('folio_f008', folio);
-    setState(() {}); // Para actualizar el UI
   }
 
   @override
@@ -185,10 +219,28 @@ class _AIQOPSF008ScreenState extends State<AIQOPSF008Screen> {
                               "AIQ-OPS-F008",
                               style: TextStyle(color: Color(0xFF598CBC), fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'Avenir'),
                             ),
+                            
                           ],
                         ),
                       ),
-
+                 Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    margin: const EdgeInsets.only(top: 5, bottom: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Color(0xFF598CBC)),
+                    ),
+                    child: Text(
+                      folioGenerado,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF263A5B),
+                        fontSize: 14,
+                        fontFamily: 'Avenir',
+                      ),
+                    ),
+                  ),
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
@@ -235,17 +287,92 @@ class _AIQOPSF008ScreenState extends State<AIQOPSF008Screen> {
                             ],
                           ),
 
-                          Row(
-                            children: [
-                              Expanded(
-                                child: buildDateField("Fecha de la inspección", controller: fechaController, isTime: false),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: buildDateField("Hora Local", controller: horaController, isTime: true),
-                              ),
-                            ],
+                         
+                          Row(   
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: TextField(
+                                  controller: fechaController,
+                                  readOnly: true,
+                                  cursorColor: const Color(0xFF263A5B),
+                                  style: const TextStyle(color: Color(0xFF263A5B)),
+                                  decoration: const InputDecoration(
+                                    labelText: "Fecha/Hora de Notificación",
+                                    labelStyle: TextStyle(color: Colors.grey),
+                                    icon: Icon(Icons.calendar_today, color: Colors.grey),
+                                    border: InputBorder.none,
+                                  ),
+                                //Folio PASO 2: Seleccion de Fecha y Actualizacion de folio
+                                onTap: () async {
+                                  FocusScope.of(context).requestFocus(FocusNode());
+                                  final fecha = await showDatePicker(
+                                    context: context,
+                                    initialDate: selectedDate ?? DateTime.now(),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100),
+                                  );
+                                  if (fecha != null) {
+                                    final consecutivo = await obtenerConsecutivoParaFecha(fecha);
+                                    setState(() {
+                                      selectedDate = fecha;
+                                      fechaController.text =
+                                          "${fecha.day.toString().padLeft(2, '0')}/"
+                                          "${fecha.month.toString().padLeft(2, '0')}/"
+                                          "${fecha.year}";
+                                      consecutivoMostrado = consecutivo;
+                                    });
+                                  }
+                                },
+                                //....
+                                ),
+                                
+                            ),
                           ),
+
+                          //Hora de llegada al lugar
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: TextField(
+                                controller: horaController,
+                                readOnly: true,
+                                cursorColor: const Color(0xFF263A5B),
+                                style: const TextStyle(color: Color(0xFF263A5B)),
+                                decoration: const InputDecoration(
+                                  labelText: "Hora de llegada",
+                                  labelStyle: TextStyle(color: Colors.grey),
+                                  icon: Icon(Icons.access_time, color: Colors.grey),
+                                  border: InputBorder.none,
+                                ),
+                                onTap: () async {
+                                  FocusScope.of(context).requestFocus(FocusNode());
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedTime ?? TimeOfDay.now(),
+                                  );
+                                  if (picked != null) {
+                                    setState(() {
+                                      selectedTime = picked;
+                                      horaController.text = picked.format(context);
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                        ),
                         ],
                       ),
                     ),
@@ -843,8 +970,10 @@ class _AIQOPSF008ScreenState extends State<AIQOPSF008Screen> {
   }
 
   // Guarda el formulario usando el folio como ID
-  await FirebaseFirestore.instance.collection('aiq_ops_f008').doc(folio.toString()).set({
-    'folio': folio,
+  await FirebaseFirestore.instance.collection('AIQ-OPS-F008')
+  .doc(folioGenerado)
+  .set({
+    'folio': folioGenerado,
     'fecha': fechaController.text,
     'hora': horaController.text,
     'numero_inspeccion': _inspeccionSeleccionada,
@@ -1178,4 +1307,4 @@ String getTextoSeleccion(String? valor) {
 }
 
 //Formularios para agregar Drive
-//F008, F007, F005.
+//F008, f008, F005.
