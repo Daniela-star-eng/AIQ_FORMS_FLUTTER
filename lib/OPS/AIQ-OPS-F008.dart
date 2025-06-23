@@ -152,6 +152,8 @@ Future<void> _cargarFolio() async {
   bool _errorObservacionesGenerales = false;
   bool _errorEnteradoNombre = false;
   bool _errorEnteradoFecha = false;
+  
+  get child => null;
 
   @override
   void dispose() {
@@ -184,14 +186,22 @@ Future<void> _cargarFolio() async {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 30, bottom: 15),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size: 30),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      ),
+                    ),
+                    ),
                     // Encabezado con botón de regreso funcional
                     Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const SizedBox(width: 8),
+                       
                         const Expanded(
                           child: Text(
                             "LISTA DE VERIFICACIÓN PARA LA INSPECCIÓN CONTINUA",
@@ -206,23 +216,21 @@ Future<void> _cargarFolio() async {
                       ],
                     ),
                     const SizedBox(height: 4),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 48),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "(2 VECES AL DÍA)",
-                              style: TextStyle(color: Color.fromARGB(255, 66, 66, 66), fontSize: 15),
-                            ),
-                            Text(
-                              "AIQ-OPS-F008",
-                              style: TextStyle(color: Color(0xFF598CBC), fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'Avenir'),
-                            ),
-                            
-                          ],
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "(2 VECES AL DÍA)",
+                          style: TextStyle(color: Color.fromARGB(255, 66, 66, 66), fontSize: 15),
                         ),
-                      ),
+                        Text(
+                          "AIQ-OPS-F008",
+                          style: TextStyle(color: Color(0xFF598CBC), fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'Avenir'),
+                        ),
+                      ],
+                    ),
+                    
                  Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                     margin: const EdgeInsets.only(top: 5, bottom: 5),

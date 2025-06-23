@@ -1,7 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:interfaz_uno_aiq/coleccion.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'forms_select.dart';
+import 'forms_select_fauna.dart';
 import 'dart:ui'; // Para ImageFilter
 import 'package:slide_to_act/slide_to_act.dart';
 
@@ -97,31 +98,32 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
-                child: SlideAction(
-                  text: 'COMENZAR',
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    fontFamily: 'Avenir',
-                    color: Colors.white,
-                  ),
-                  outerColor: const Color(0xFF1F3A5F),
-                  innerColor: const Color(0xFF598CBC),
-                  onSubmit: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const FormularioScreen(),
-                      ),
-                    );
-                  },
-                  elevation: 2,
-                  sliderButtonIcon: Transform.rotate(
-                    angle: 1.5708, // 90 grados en radianes
-                    child: const Icon(Icons.airplanemode_active_sharp, color: Colors.white),
+              SizedBox(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 2.0),
+                  child: SlideAction(
+                    text: 'COMENZAR',
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      fontFamily: 'Avenir',
+                      color: Colors.white,
+                    ),
+                    outerColor: const Color(0xFF1F3A5F),
+                    innerColor: const Color(0xFF598CBC),
+                    onSubmit: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ColeccionesScreen(),
+                        ),
+                      );
+                    },
+                    elevation: 1,
+                    sliderButtonIcon: Transform.rotate(
+                      angle: 1.5708, // 90 grados en radianes
+                      child: const Icon(Icons.airplanemode_active_sharp, color: Colors.white),
+                    ),
                   ),
                 ),
               ),

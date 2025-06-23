@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:excel/excel.dart' as ex;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -53,14 +56,14 @@ Future<String?> subirPDFaDriveEnCarpeta(File pdfFile, String folderId) async {
   return 'https://drive.google.com/file/d/${uploaded.id}/view?usp=sharing';
 }
 
-class AIQAMBF005Screen extends StatefulWidget {
-  const AIQAMBF005Screen({super.key});
+class AIQAMBF004Screen extends StatefulWidget {
+  const AIQAMBF004Screen({super.key});
 
   @override
-  State<AIQAMBF005Screen> createState() => _AIQAMBF005ScreenState();
+  State<AIQAMBF004Screen> createState() => _AIQAMBF004ScreenState();
 }
 
-class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
+class _AIQAMBF004ScreenState extends State<AIQAMBF004Screen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController campo1Controller = TextEditingController();
@@ -80,10 +83,6 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
 
   int folio = 1;
   int consecutivoMostrado = 1;
-  
-  String? metodoControlSeleccionado;
-  
-  var campoMetodoOtroController;
   
   get folioGenerado => null;
 
@@ -106,14 +105,14 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
     if (_formKey.currentState!.validate() && !_errorFirma) {
       final folioGenerado = await generarFolio();
       await FirebaseFirestore.instance
-          .collection('AIQ-AMB-F-005')
+          .collection('AIQ-AMB-F-004')
           .doc(folioGenerado)
           .set({
         'folio': folioGenerado,
         'fecha': fechaController.text,
         'hora': horaController.text,
-        'Zona': campo1Controller.text,
-        'Fauna': jaulaSeleccionada,
+        'ubicacion': campo1Controller.text,
+        'jaula': jaulaSeleccionada,
         'especie': campo2Controller.text,
         'resultado': resultadoSeleccionado,
         'nombre_prestador': campo3Controller.text,
@@ -121,14 +120,18 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
       });
 
       // Generar PDF y subir a Drive
-      const folderId = '1scs6kGvNf9zaoTyvDu-UFi8zNELbBZ19'; // <-- Cambia esto por el ID de tu carpeta de Drive
+      final pdfFile = await _generarPDFyGuardar(folioGenerado);
+      const folderId = '1ma4p1ascNRZA79_VikCNJvznxzC_J4VX'; // <-- Cambia esto por el ID de tu carpeta de Drive
       String? driveLink;
+      if (pdfFile != null) {
+        driveLink = await subirPDFaDriveEnCarpeta(pdfFile, folderId);
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(driveLink != null
-              ? 'Formulario guardado y subido a Drive'
-              : 'Formulario guardado, pero no se pudo subir a Drive'),
+              ? 'Formulario guardado y PDF subido a Drive'
+              : 'Formulario guardado, pero no se pudo subir el PDF a Drive'),
           action: driveLink != null
               ? SnackBarAction(
                   label: 'Ver PDF',
@@ -158,19 +161,394 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
   Future<void> _cargarFolio() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      folio = prefs.getInt('folio_f005') ?? 1;
+      folio = prefs.getInt('folio_f004') ?? 1;
     });
   }
 
   Future<void> _incrementarFolio() async {
     final prefs = await SharedPreferences.getInstance();
     folio++;
-    await prefs.setInt('folio_f005', folio);
+    await prefs.setInt('folio_f004', folio);
     setState(() {});
   }
 
   Future<void> _compartirFormulario() async {
     await Share.share('Folio del formulario: $folio');
+  }
+
+  Future<void> _generarPDF(String folioGenerado) async {
+    final pdf = pw.Document();
+    final logoBytes = await rootBundle.load('assets/AIQ_LOGO_.png');
+    final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    final firmaBytes = await firmaController.isNotEmpty ? await firmaController.toPngBytes() : null;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) => [
+          // Encabezado
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Image(logoImage, width: 80),
+              pw.Column(
+                children: [
+                  pw.Text(
+                    'AIQ_AMB-F-004',
+                    style: pw.TextStyle(
+                      fontSize: 20,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF263A5B),
+                    ),
+                  ),
+                  pw.Text(
+                    'REGISTRO DE CAPTURA DE FAUNA',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF598CBC),
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(width: 80),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+          pw.Divider(),
+
+          // Folio y fecha/hora
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Folio: $folioGenerado', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text('Fecha: ${fechaController.text}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text('Hora: ${horaController.text}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+
+          // Tabla de datos principales
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColor.fromInt(0xFFC2C8D9), width: 1),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(2),
+              1: const pw.FlexColumnWidth(4),
+            },
+            children: [
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFE8EAF2)),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text('Ubicación:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(campo1Controller.text),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text('Jaula:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(jaulaSeleccionada ?? ''),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFE8EAF2)),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text('Especie capturada:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(campo2Controller.text),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text('Resultados y comentarios:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(resultadoSeleccionado ?? ''),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 24),
+
+          // Nombre y firma
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Nombre del prestador:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.Text(campo3Controller.text),
+                ],
+              ),
+              if (firmaBytes != null)
+                pw.Column(
+                  children: [
+                    pw.Text('Firma:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 4),
+                    pw.Image(pw.MemoryImage(firmaBytes), width: 120, height: 60),
+                  ],
+                ),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+          pw.Divider(),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            'Exportado por AIQ-Forms',
+            style: pw.TextStyle(fontSize: 10, color: PdfColor.fromInt(0xFF598CBC)),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+  Future<File?> _generarPDFyGuardar(String folioGenerado) async {
+    try {
+      final pdf = pw.Document();
+      final logoBytes = await rootBundle.load('assets/AIQ_LOGO_.png');
+      final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      final firmaBytes = await firmaController.isNotEmpty ? await firmaController.toPngBytes() : null;
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (pw.Context context) => [
+            // Encabezado
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Image(logoImage, width: 80),
+                pw.Column(
+                  children: [
+                    pw.Text(
+                      'AIQ_AMB-F-004',
+                      style: pw.TextStyle(
+                        fontSize: 20,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColor.fromInt(0xFF263A5B),
+                      ),
+                    ),
+                    pw.Text(
+                      'REGISTRO DE CAPTURA DE FAUNA',
+                      style: pw.TextStyle(
+                        fontSize: 16,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColor.fromInt(0xFF598CBC),
+                      ),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(width: 80),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+            pw.Divider(),
+
+            // Folio y fecha/hora
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Folio: $folioGenerado', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text('Fecha: ${fechaController.text}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text('Hora: ${horaController.text}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+
+            // Tabla de datos principales
+            pw.Table(
+              border: pw.TableBorder.all(color: PdfColor.fromInt(0xFFC2C8D9), width: 1),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(2),
+                1: const pw.FlexColumnWidth(4),
+              },
+              children: [
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFE8EAF2)),
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text('Ubicación:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text(campo1Controller.text),
+                    ),
+                  ],
+                ),
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text('Jaula:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text(jaulaSeleccionada ?? ''),
+                    ),
+                  ],
+                ),
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFE8EAF2)),
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text('Especie capturada:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text(campo2Controller.text),
+                    ),
+                  ],
+                ),
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text('Resultados y comentarios:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text(resultadoSeleccionado ?? ''),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 24),
+
+            // Nombre y firma
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Nombre del prestador:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text(campo3Controller.text),
+                  ],
+                ),
+                if (firmaBytes != null)
+                  pw.Column(
+                    children: [
+                      pw.Text('Firma:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 4),
+                      pw.Image(pw.MemoryImage(firmaBytes), width: 120, height: 60),
+                    ],
+                  ),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+            pw.Divider(),
+            pw.SizedBox(height: 8),
+            pw.Text(
+              'Exportado por AIQ-Forms',
+              style: pw.TextStyle(fontSize: 10, color: PdfColor.fromInt(0xFF598CBC)),
+            ),
+          ],
+        ),
+      );
+      final output = await getTemporaryDirectory();
+      final fechaSafe = fechaController.text.replaceAll('/', '-');
+      final file = File('${output.path}/$folioGenerado.pdf');
+      await file.writeAsBytes(await pdf.save());
+      return file;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al generar PDF: $e')),
+        );
+      }
+      return null;
+    }
+  }
+
+  Future<void> guardarEnExcel() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/AIQ_AMB_F_004.xlsx';
+    final file = File(filePath);
+
+    ex.Excel excel;
+    if (await file.exists()) {
+      var bytes = await file.readAsBytes();
+      excel = ex.Excel.decodeBytes(bytes);
+    } else {
+      excel = ex.Excel.createExcel();
+      excel.rename('Sheet1', 'Registros');
+      excel['Registros'].appendRow([
+        'Folio', 'Fecha', 'Hora', 'Ubicación', 'Jaula', 'Especie', 'Resultado', 'Nombre Prestador'
+      ]);
+    }
+
+    excel['Registros'].appendRow([
+      folio,
+      fechaController.text,
+      horaController.text,
+      campo1Controller.text,
+      jaulaSeleccionada ?? '',
+      campo2Controller.text,
+      resultadoSeleccionado ?? '',
+      campo3Controller.text,
+    ]);
+
+    final excelBytes = excel.encode();
+    if (excelBytes != null) {
+      await file.writeAsBytes(excelBytes, flush: true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Exportado a Excel correctamente!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al exportar a Excel')),
+      );
+    }
+  }
+
+  Future<void> compartirExcel() async {
+    print('Intentando compartir Excel...');
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/AIQ_AMB_F_004.xlsx';
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      print('El archivo existe, compartiendo...');
+      await Share.shareXFiles([XFile(filePath)], text: 'Archivo Excel de registros AIQ');
+    } else {
+      print('El archivo NO existe');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hay archivo Excel generado aún')),
+      );
+    }
   }
 
   Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
@@ -193,7 +571,7 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
     final mes = fechaSeleccionada!.month.toString().padLeft(2, '0');
     final anio = fechaSeleccionada!.year.toString();
     final consecutivo = consecutivoMostrado;
-    return "AIQAMBF005-$dia-$mes-$anio-$consecutivo";
+    return "AIQAMBF004-$dia-$mes-$anio-$consecutivo";
   }
 
   void limpiarCampos() {
@@ -215,12 +593,6 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFE8EAF2),
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: const Color(0xFF263A5B),
-      ),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -231,13 +603,25 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "MONITOREO DE AERONAVE",
+                        Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size:30),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ),
+                        const Text(
+                          "REVISIÓN CEBADO Y SEGUIMIENTO DE TRAMPAS DE CAPTURA",
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
@@ -246,10 +630,10 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                           ),
                           textAlign: TextAlign.left,
                         ),
-                        Text(
-                          "AIQ-AMB-F-005",
+                        const Text(
+                          "AIQ-AMB-F-004",
                           style: TextStyle(
-                            fontSize: 26,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Avenir',
                             color: Color(0xFF598CBC),
@@ -268,7 +652,7 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                       border: Border.all(color: const Color(0xFF598CBC)),
                     ),
                     child: Text(
-                      "AIQAMBF005-${fechaSeleccionada != null
+                      "AIQAMBF004-${fechaSeleccionada != null
                           ? "${fechaSeleccionada!.day.toString().padLeft(2, '0')}-${fechaSeleccionada!.month.toString().padLeft(2, '0')}-${fechaSeleccionada!.year}"
                           : "--/--/----"}-$consecutivoMostrado",
                       style: const TextStyle(
@@ -380,7 +764,6 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                     ),
                   ),
                   // Campo de fecha y hora
-                  
                   const SizedBox(height: 12),
                   Container(
                     decoration: BoxDecoration(
@@ -393,43 +776,14 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Zona", // agregar mapa pdf
+                          "Ubicación",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: Color(0xFF263A5B),
                           ),
                         ),
-                        Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (_) => Dialog(
-                                  backgroundColor: Colors.black,
-                                  child: InteractiveViewer(
-                                    panEnabled: true,
-                                    minScale: 0.5,
-                                    maxScale: 4,
-                                    child: Image.asset(
-                                      'assets/plano.png', // Cambia por tu imagen
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                'assets/plano.png', // Cambia por tu imagen
-                                height: 300,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         TextField(
                           controller: campo1Controller,
                           decoration: InputDecoration(
@@ -444,8 +798,6 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                             contentPadding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                         ),
-                        // Imagen interactiva arriba del campo Zona
-                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
@@ -461,7 +813,7 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Fauna",
+                          "Jaula",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -469,10 +821,59 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                           ),
                         ),
                         const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: jaulaSeleccionada,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: const Icon(Icons.grid_on, color: Color(0xFFC2C8D9)),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                            hintText: "Selecciona la jaula...",
+                          ),
+                          items: List.generate(
+                            9,
+                            (index) => DropdownMenuItem(
+                              value: (index + 1).toString(),
+                              child: Text((index + 1).toString()),
+                            ),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              jaulaSeleccionada = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC2C8D9), // Fondo azul claro
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Especie capturada",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Color(0xFF263A5B),
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         TextField(
+                          controller: campo2Controller,
                           decoration: InputDecoration(
-                            hintText: "Especie",
+                            hintText: "Escribe la especie...",
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -483,21 +884,6 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                             contentPadding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          decoration: InputDecoration(
-                            hintText: "Número",
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon: const Icon(Icons.confirmation_number, color: Color(0xFFC2C8D9)),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
                       ],
                     ),
                   ),
@@ -513,7 +899,7 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Método de Control",
+                          "Resultados y comentarios",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -522,75 +908,7 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: metodoControlSeleccionado,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon: const Icon(Icons.build, color: Color(0xFFC2C8D9)),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                            hintText: "Selecciona un método...",
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: "Perro", child: Text("Perro")),
-                            DropdownMenuItem(value: "Ave", child: Text("Ave")),
-                            DropdownMenuItem(value: "Cañón de gas", child: Text("Cañón de gas")),
-                            DropdownMenuItem(value: "Rifle de Aire", child: Text("Rifle de Aire")),
-                            DropdownMenuItem(value: "Vehículo", child: Text("Vehículo")),
-                            DropdownMenuItem(value: "Artefacto Sonoro", child: Text("Artefacto Sonoro")),
-                            DropdownMenuItem(value: "Otro", child: Text("Otro")),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              metodoControlSeleccionado = value;
-                            });
-                          },
-                        ),
-                        // Si quieres dejar el TextField para "otro", puedes mostrarlo solo si selecciona "Otro":
-                        if (metodoControlSeleccionado == "Otro") ...[
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: campoMetodoOtroController,
-                            decoration: InputDecoration(
-                              hintText: "Especifica el método...",
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                              prefixIcon: const Icon(Icons.edit, color: Color(0xFFC2C8D9)),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFC2C8D9), // Fondo azul claro
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.only(bottom: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Observaciones",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color(0xFF263A5B),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
+                          value: resultadoSeleccionado,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
@@ -600,8 +918,31 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                             ),
                             prefixIcon: const Icon(Icons.comment, color: Color(0xFFC2C8D9)),
                             contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                            hintText: "Comentarios",
+                            hintText: "Selecciona un resultado...",
                           ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: "cerrada con cebo",
+                              child: Text("Cerrada con cebo"),
+                            ),
+                            DropdownMenuItem(
+                              value: "activada sin cebo",
+                              child: Text("Activada sin cebo"),
+                            ),
+                            DropdownMenuItem(
+                              value: "activada con cebo",
+                              child: Text("Activada con cebo"),
+                            ),
+                            DropdownMenuItem(
+                              value: "captura",
+                              child: Text("Captura"),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              resultadoSeleccionado = value;
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -672,9 +1013,10 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                     child: ElevatedButton(
                       onPressed: () async {
                         guardarFormulario();   // Espera a que termine de guardar
+                        await guardarEnExcel();      // Luego exporta a Excel
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 1, 38, 73),
+                        backgroundColor: const Color(0xFF598CBC),
                         padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -684,11 +1026,19 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),],
+                  const SizedBox(height: 16),
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: compartirExcel,
+                      icon: const Icon(Icons.share),
+                      label: const Text("COMPARTIR EXCEL"),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          //LOGO DEL AIQ
+          // Imagen en la esquina inferior derecha del logo del AIQ
           Positioned(
             bottom: 16,
             right: 16,
@@ -716,3 +1066,7 @@ class _AIQAMBF005ScreenState extends State<AIQAMBF005Screen> {
     );
   }
 }
+
+//quitarle lo de pdf a los últimos forms que realicé
+// cambiar las fotos de los forms 
+//ver como exportar a excel

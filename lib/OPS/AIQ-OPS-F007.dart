@@ -155,6 +155,7 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
     return Stack(
       children: [
         Scaffold(
+
           backgroundColor: const Color(0xFFEAEFF8),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -162,14 +163,21 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                   Padding(
+                    padding: const EdgeInsets.only(top: 30, bottom: 15),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size: 30),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      ),
+                    ),
+                    ),
                   // Encabezado con botón de regreso funcional
                   Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
                           "LISTA DE VERIFICACIÓN PARA LA INSPECCIÓN DIARIA",
@@ -184,22 +192,22 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
                     ],
                   ),
                   const SizedBox(height: 4),
-                    const Padding(
-                      padding: EdgeInsets.only(left: 48),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+
+
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
                             "(ANTES DE LA APERTURA DE OPERACIONES)",
-                            style: TextStyle(color: Color.fromARGB(255, 66, 66, 66), fontSize: 15),
-                          ),
-                          Text(
+                          style: TextStyle(color: Color.fromARGB(255, 66, 66, 66), fontSize: 15),
+                        ),
+                        Text(
                             "AIQ-OPS-F007",
-                            style: TextStyle(color: Color(0xFF598CBC), fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'Avenir'),
-                          ),
-                        ],
-                      ),
+                          style: TextStyle(color: Color(0xFF598CBC), fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'Avenir'),
+                        ),
+                      ],
                     ),
+                    
                  Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                     margin: const EdgeInsets.only(top: 5, bottom: 5),
@@ -237,33 +245,6 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
                             ),
                           ],
                         ),
-                        
-                        Row(
-                          children: [
-                            const Text(
-                              "Numero de Inspección: ",
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF263A5B),
-                                ),
-                            ),
-                            SizedBox(width: 8),
-                            DropdownButton<int>(
-                              value: _inspeccionSeleccionada,
-                              items: const [
-                                DropdownMenuItem(value: 1, child: Text("1/2")),
-                                DropdownMenuItem(value: 2, child: Text("2/2")),
-                              ],
-                              onChanged: (value) {
-                                setState(() {
-                                  _inspeccionSeleccionada = value!;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-
                           Row(   
                           children: [
                             Expanded(

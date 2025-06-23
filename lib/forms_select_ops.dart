@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:interfaz_uno_aiq/AIQ-AMB-F-005.dart';
-import 'package:interfaz_uno_aiq/AIQ-OPS-F008.dart';
-import 'package:interfaz_uno_aiq/AIQ-OPS-F007.dart';
-import 'package:interfaz_uno_aiq/AIQ-OPS-F005.dart';
-import 'derrames.dart'; // Asegúrate de tener este archivo creado con el widget DerramesScreen
-import 'package:interfaz_uno_aiq/AIQ-AMB-F-003.DART';
-import 'package:interfaz_uno_aiq/derrames.dart' as derrames_lib; // Asegúrate de tener este archivo creado con el widget DerramesScreen
-import 'package:interfaz_uno_aiq/AIQ-AMB-F-004.dart';
-import 'package:interfaz_uno_aiq/AIQ-AMB-F-001.dart';
-import 'package:interfaz_uno_aiq/AIQ-AMB-F-002.dart';
+import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F008.dart';
+import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F007.dart';
+import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F005.dart';
+import 'OPS/derrames.dart'; // Asegúrate de tener este archivo creado con el widget DerramesScreen
+import 'package:interfaz_uno_aiq/OPS/derrames.dart' as derrames_lib; // Asegúrate de tener este archivo creado con el widget DerramesScreen
 
-class FormularioScreen extends StatefulWidget {
-  const FormularioScreen({super.key});
+class FormularioScreenOPS extends StatefulWidget {
+  const FormularioScreenOPS({super.key});
 
   @override
-  State<FormularioScreen> createState() => _FormularioScreenState();
+  State<FormularioScreenOPS> createState() => _FormularioScreenState();
 }
 
-class _FormularioScreenState extends State<FormularioScreen> {
+class _FormularioScreenState extends State<FormularioScreenOPS> {
   final List<Map<String, String>> formularios = const [
     {
       "titulo": "NEUTRALIZACION Y LIMPIEZA DE DERRAMES",
@@ -39,33 +34,8 @@ class _FormularioScreenState extends State<FormularioScreen> {
       "titulo": "VERIFICACION PREVENCION DE INCURSIONES",
       "codigo": "AIQ-OPS-F005",
       "imagen": "assets/AIQ-OPS-F005-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "MONITOREO DE RESTOS DE FAUNA EN AREAS OPERATIVAS",
-      "codigo": "AIQ-AMB-F-003",
-      "imagen": "assets/AIQ-AMB-F-003-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "NUEVO FORMULARIO",
-      "codigo": "AIQ-AMB-F-004",
-      "imagen": "assets/AIQ-AMB-F-004-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "Formulario Fauna",
-      "codigo": "AIQ-AMB-F-001",
-      "imagen": "assets/AIQ-AMB-F-001-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "FORMULARIO DE FAUNA Y HABITAD",
-      "codigo": "AIQ-AMB-F-002",
-      "imagen": "assets/AIQ-AMB-F-002-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "MONITOREO DE AERONAVES",
-      "codigo": "AIQ-AMB-F-005",
-      "imagen": "assets/AIQ-AMB-F-005-FORM-PREVIEW.jpg",
     }
-  ];
+      ];
 
   int _currentIndex = 0;
 
@@ -196,32 +166,7 @@ class _FormularioScreenState extends State<FormularioScreen> {
                             context,
                             MaterialPageRoute(builder: (context) => const AIQOPSF005Screen()),
                           );
-                        } else if (index == 4) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF003Screen()),
-                          );
-                        } else if (index == 5) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF004Screen()),
-                          );
-                        } else if (index == 6) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF001Screen()),
-                          );
-                        } else if (index == 7) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF002Screen()),
-                          );
-                        } else if (index == 8) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF005Screen()),
-                          );
-                        }
+                        } 
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),

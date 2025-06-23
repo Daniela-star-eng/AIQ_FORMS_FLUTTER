@@ -2,9 +2,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -226,131 +224,6 @@ class _AIQAMBF001ScreenState extends State<AIQAMBF001Screen> {
     return 'https://drive.google.com/file/d/${uploaded.id}/view?usp=sharing';
   }
 
-  // Exporta el PDF, lo guarda localmente y lo sube a Drive
-  Future<File?> _generarPDFyGuardar(String fechaHoy, String folioGenerado) async {
-    try {
-      final pdf = pw.Document();
-      final logoBytes = await rootBundle.load('assets/AIQ_LOGO_.png');
-      final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
-      final firma1Bytes = firma1Controller.isNotEmpty ? await firma1Controller.toPngBytes() : null;
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
-          build: (pw.Context context) => [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Image(logoImage, width: 80),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text('AIQ-AMB-F-001', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-                    pw.Text('MONITOREO Y AVISTAMIENTO DE FAUNA', style: pw.TextStyle(fontSize: 12, color: PdfColors.blueGrey800)),
-                  ],
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 12),
-            pw.Container(
-              color: PdfColors.blue100,
-              padding: const pw.EdgeInsets.all(8),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Folio: $folioGenerado', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                  pw.Text('Fecha: $fechaHoy'),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 16),
-            pw.Container(
-              decoration: pw.BoxDecoration(color: PdfColors.grey200, borderRadius: pw.BorderRadius.circular(6)),
-              padding: const pw.EdgeInsets.all(10),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Ubicación', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-                  pw.Text(ubicacionController.text),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 12),
-            pw.Container(
-              decoration: pw.BoxDecoration(color: PdfColors.grey200, borderRadius: pw.BorderRadius.circular(6)),
-              padding: const pw.EdgeInsets.all(10),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Fauna', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-                  pw.Bullet(text: 'Especie: ${especieController.text}'),
-                  pw.Bullet(text: 'Número: ${numeroFaunaController.text}'),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 12),
-            pw.Container(
-              decoration: pw.BoxDecoration(color: PdfColors.grey200, borderRadius: pw.BorderRadius.circular(6)),
-              padding: const pw.EdgeInsets.all(10),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Método de control', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-                  pw.Text(metodoControlController.text),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 12),
-            pw.Container(
-              decoration: pw.BoxDecoration(color: PdfColors.grey200, borderRadius: pw.BorderRadius.circular(6)),
-              padding: const pw.EdgeInsets.all(10),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Resultados y comentarios', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-                  pw.Text(resultadosComentariosController.text),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 12),
-            pw.Container(
-              decoration: pw.BoxDecoration(color: PdfColors.grey200, borderRadius: pw.BorderRadius.circular(6)),
-              padding: const pw.EdgeInsets.all(10),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Observaciones', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-                  pw.Text(observacionesController.text),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 16),
-            pw.Text('Firma', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
-            pw.Text('Nombre: ${persona1NombreController.text}', style: pw.TextStyle(fontSize: 12)),
-            if (firma1Bytes != null)
-              pw.Padding(
-                padding: const pw.EdgeInsets.only(top: 8),
-                child: pw.Image(pw.MemoryImage(firma1Bytes), width: 120, height: 40),
-              ),
-          ],
-        ),
-      );
-      final output = await getTemporaryDirectory();
-      // Corregir el nombre del archivo para evitar caracteres inválidos
-      final folioGeneradoSafe = folioGenerado.replaceAll('/', '-');
-      final file = File('${output.path}/$folioGeneradoSafe.pdf');
-      await file.writeAsBytes(await pdf.save());
-      return file;
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al generar PDF: $e')),
-        );
-      }
-      return null;
-    }
-  }
-
   Future<String> generarFolio() async {
     if (_fechaSeleccionada == null) return "";
     final dia = _fechaSeleccionada!.day.toString().padLeft(2, '0');
@@ -387,43 +260,19 @@ class _AIQAMBF001ScreenState extends State<AIQAMBF001Screen> {
       final folioGenerado = await generarFolio();
       await guardarEnFirestore(fechaHoy, folioGenerado);
       await logoutGoogle(); // Permitir selección de cuenta
-      final pdfFile = await _generarPDFyGuardar(fechaHoy, folioGenerado);
-      if (pdfFile == null) throw 'No se pudo generar el PDF';
-      final driveLink = await subirPDFaDriveEnCarpeta(pdfFile, folderId);
       await _incrementarFolio();
       limpiarCampos();
-      if (mounted) {
-        if (driveLink != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Formulario guardado y PDF subido a Drive'),
-              action: SnackBarAction(
-                label: 'Ver PDF',
-                onPressed: () async {
-                  if (await canLaunch(driveLink)) {
-                    await launch(driveLink);
-                  }
-                },
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Formulario guardado, pero no se pudo subir el PDF a Drive')),
-          );
-        }
-      }
-    } catch (e) {
+    } catch (e, stack) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar/exportar: $e')),
+          SnackBar(content: Text('Ocurrió un error al guardar: $e')),
         );
       }
     } finally {
-      if (mounted) setState(() => _isSaving = false);
+      setState(() => _isSaving = false);
     }
   }
-
+  
   Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
     final dia = fecha.day.toString().padLeft(2, '0');
     final mes = fecha.month.toString().padLeft(2, '0');
@@ -494,15 +343,23 @@ class _AIQAMBF001ScreenState extends State<AIQAMBF001Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        foregroundColor: const Color(0xFF263A5B),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size:25),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ),
             const SizedBox(height: 4),
             const Padding(
               padding: EdgeInsets.only(bottom: 2),
@@ -1029,3 +886,4 @@ class _AIQAMBF001ScreenState extends State<AIQAMBF001Screen> {
     );
   }
 }
+

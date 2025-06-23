@@ -46,6 +46,17 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
 
   String? destinoRestosSeleccionado;
 
+  DateTime? fechaSeleccionada;
+  int consecutivoMostrado = 1;
+
+  String get folioGenerado {
+    if (fechaSeleccionada == null) return "AIQAMB003--/--/-----$consecutivoMostrado";
+    final dia = fechaSeleccionada!.day.toString().padLeft(2, '0');
+    final mes = fechaSeleccionada!.month.toString().padLeft(2, '0');
+    final anio = fechaSeleccionada!.year.toString();
+    return "AIQAMB003-$anio-$mes-$dia-$consecutivoMostrado";
+  }
+
   @override
   void initState() {
     super.initState();
@@ -139,7 +150,7 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Folio: $folio', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text('Folio: $folioGenerado', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                 pw.Text('Fecha: $fechaHoy', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               ],
             ),
@@ -347,9 +358,12 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
   }
 
   Future<void> guardarFormulario() async {
-    await FirebaseFirestore.instance.collection('AIQ_AMB_F-003').doc(folio.toString()).set({
-      'folio': folio,
-      'fecha': fechaHoy,
+    await FirebaseFirestore.instance
+        .collection('AIQ-AMB-F-003')
+        .doc(folioGenerado)
+        .set({
+      'folio': folioGenerado,
+      'fecha': fechaHoraNotificacionController.text,
       'especie': especieController.text,
       'cantidad': cantidadController.text,
       'ubicacion': ubicacionController.text,
@@ -384,6 +398,20 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
     await _incrementarFolio();
   }
 
+  Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    final anio = fecha.year.toString();
+    final fechaStr = "$dia/$mes/$anio";
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('AIQ-AMB-F-003')
+        .where('fecha', isEqualTo: fechaStr)
+        .get();
+
+    return snapshot.docs.length + 1;
+  }
+
   String _nombreMes(int mes) {
     const meses = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -398,12 +426,6 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
       children: [
         Scaffold(
           backgroundColor: const Color(0xFFE8EAF2),
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            foregroundColor: const Color(0xFF263A5B),
-          ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -411,6 +433,18 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size:30),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   const Padding(
                     padding: EdgeInsets.only(bottom: 20),
@@ -452,30 +486,25 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
                     
                   ),
                   const SizedBox(height: 8), // Espacio opcional
-                  Text(
-                    "Folio: $folio",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF263A5B),
+                                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    margin: const EdgeInsets.only(top: 5, bottom: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Color(0xFF598CBC)),
                     ),
-                  ),
-                  const SizedBox(height: 24),         
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Bitácora: ${_nombreMes(DateTime.now().month)} ${DateTime.now().year}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF263A5B),
-                          fontFamily: 'Avenir'
-                        ),
+                    child: Text(
+                      folioGenerado,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF263A5B),
+                        fontSize: 14,
+                        fontFamily: 'Avenir',
                       ),
                     ),
                   ),
+                  const SizedBox(height: 10),         
                   // Fechas y horas
                   Container(
                     decoration: BoxDecoration(
@@ -517,7 +546,7 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
                                     border: InputBorder.none,
                                   ),
                                   onTap: () async {
-                                    FocusScope.of(context).requestFocus(FocusNode()); // Quita el teclado
+                                    FocusScope.of(context).requestFocus(FocusNode());
                                     final fecha = await showDatePicker(
                                       context: context,
                                       initialDate: fechaHoraNotificacion ?? DateTime.now(),
@@ -525,12 +554,15 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
                                       lastDate: DateTime(2100),
                                     );
                                     if (fecha != null) {
+                                      final consecutivo = await obtenerConsecutivoParaFecha(fecha);
                                       setState(() {
+                                        fechaSeleccionada = fecha;
                                         fechaHoraNotificacion = fecha;
                                         fechaHoraNotificacionController.text =
                                             "${fecha.day.toString().padLeft(2, '0')}/"
                                             "${fecha.month.toString().padLeft(2, '0')}/"
                                             "${fecha.year}";
+                                        consecutivoMostrado = consecutivo;
                                       });
                                     }
                                   },

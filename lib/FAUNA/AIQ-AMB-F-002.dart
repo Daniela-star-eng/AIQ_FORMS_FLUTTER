@@ -137,17 +137,23 @@ class _AIQAMBF002ScreenState extends State<AIQAMBF002Screen> {
       children: [
         Scaffold(
           backgroundColor: const Color(0xFFE8EAF2),
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            foregroundColor: const Color(0xFF263A5B),
-          ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size:25),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 4),
                 const Padding(
                   padding: EdgeInsets.only(bottom: 2),

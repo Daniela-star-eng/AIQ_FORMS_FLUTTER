@@ -890,12 +890,8 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
       children: [
         Scaffold(
           backgroundColor: const Color(0xFFE8EAF2),
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            foregroundColor: const Color(0xFF263A5B),
-          ),
+          
+
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -903,12 +899,26 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 4),
+
+                    Padding(
+                    padding: const EdgeInsets.only(top: 30, bottom: 15),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF263A5B), size: 30),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      ),
+                    ),
+                    ),
+
                   const Padding(
-                    padding: EdgeInsets.only(bottom: 20),
+                    padding: EdgeInsets.only(bottom: 0),
                     child: Text.rich(
                       TextSpan(
                         children: [
+                          
                           TextSpan(
                             text: "NEUTRALIZACION Y LIMPIEZA\n",
                             style: TextStyle(
@@ -924,7 +934,7 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Avenir',
-                              color: Color(0xFF598CBC),
+                              color: Color(0xFF263A5B),
                             ),
                           ),
                         ],
@@ -932,17 +942,17 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
                       textAlign: TextAlign.left,
                     ),
                   ),
+
                   const Text(
                     "AIQ-OPS-F013",
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF263A5B),
+                      color: Color(0xFF598CBC),
                       fontFamily: 'Avenir',
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 10),
 
                   Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -962,7 +972,8 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
                     ),
                   ),
                 ),
-
+                  const SizedBox(height: 10),
+                  
                   // Datos de notificación
                   Container(
                     decoration: BoxDecoration(
@@ -984,27 +995,7 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Folio: $folio",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF263A5B),
-                              ),
-                            ),
-                            Text(
-                              "Fecha: $fechaHoy",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF263A5B),
-                              ),
-                            ),
-                          ],
-                        ),
+
                         const SizedBox(height: 8),
 
                         //Fecha y hora de notificacion
