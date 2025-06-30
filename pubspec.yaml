@@ -44,20 +44,21 @@ flutter:
     - assets/derrames_form.png
     - assets/AIQ-OPS-F008-FORM-PREVIEW.jpg
     - assets/AIQ-OPS-F013-FORM-PREVIEW.jpg
-    - assets/Avion-one.png
     - assets/AIQ-OPS-F007-FORM-PREVIEW.jpg
     - assets/AIQ-OPS-F005-FORM-PREVIEW.jpg
-    - assets/PLANO_AIQ.pdf
-    - assets/plano.png
-    - assets/foto_random.jpg
-    - assets/AIQ-AMB-F-004.jpg
-    - assets/avionG.jpg
-    - assets/generica.jpg
     - assets/AIQ-AMB-F-001-FORM-PREVIEW.jpg
     - assets/AIQ-AMB-F-002-FORM-PREVIEW.jpg
     - assets/AIQ-AMB-F-004-FORM-PREVIEW.jpg
     - assets/AIQ-AMB-F-003-FORM-PREVIEW.jpg
     - assets/AIQ-AMB-F-005-FORM-PREVIEW.jpg
+    - assets/AIQ-SSEI-F002-FORM-PREVIEW.jpg
+    - assets/AIQ-SSEI-F003-FORM-PREVIEW.jpg
+    - assets/PLANO_AIQ.pdf
+    - assets/plano.png
+    - assets/foto_random.jpg
+    - assets/avionG.jpg
+    - assets/generica.jpg
+    - assets/FLYS.png
 
   fonts:
     - family: Avenir

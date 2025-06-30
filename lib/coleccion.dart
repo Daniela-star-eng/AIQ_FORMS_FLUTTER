@@ -10,41 +10,61 @@ class ColeccionesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE9EBF3),
+      backgroundColor: const Color(0xFF0E1934),
       body: Stack(
         children: [
+          // Imagen en posición absoluta
+          Positioned(
+            top: 650,
+            right: 185,
+            child: Image.asset(
+              'assets/FLYS.png', // Asegúrate de que la ruta sea correcta y esté en pubspec.yaml
+              height: 200,
+            ),
+          ),
           // Contenido principal
           SafeArea(
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Padding solo para el encabezado
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 50, 20, 0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.arrow_back_ios, size: 30),
+                        IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        ),
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'COLECCIONES',
                             style: TextStyle(
-                              fontSize: 35,
+                              fontSize: 45,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1C2B52),
+                              color: Color.fromARGB(255, 255, 255, 255),
                               fontFamily: 'Avenir',
+                              height: 1.1,
+                              letterSpacing: 1.0,
                             ),
                           ),
-                          const SizedBox(height: 5),
                           const Text(
                             'DEPARTAMENTO\nDE OPS',
                             style: TextStyle(
-                              fontSize: 25,
-                              color: Color(0xFF5C7CA5),
+                              fontSize: 35,
+                              color: Color(0xFFB3DAFF),
                               fontFamily: 'Avenir',
+                              height: 1.1,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
@@ -52,14 +72,13 @@ class ColeccionesScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
-                // Padding solo para los botones
+                const SizedBox(height: 90),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
                     children: [
                       SlideAction(
-                        height: 90,
+                        height: 95,
                         text: 'OPS',
                         textStyle: const TextStyle(
                           color: Colors.white,
@@ -69,7 +88,8 @@ class ColeccionesScreen extends StatelessWidget {
                         ),
                         outerColor: const Color(0xFF5181B9),
                         innerColor: const Color(0xFF1C2B52),
-                        sliderButtonIcon: const Icon(Icons.flight, color: Colors.white, size: 48),
+                        sliderButtonIcon:
+                            const Icon(Icons.flight, color: Colors.white, size: 50),
                         elevation: 1,
                         onSubmit: () {
                           Navigator.push(
@@ -80,7 +100,7 @@ class ColeccionesScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
                       SlideAction(
                         height: 90,
                         text: 'FAUNA',
@@ -90,9 +110,10 @@ class ColeccionesScreen extends StatelessWidget {
                           fontSize: 40,
                           fontFamily: 'Avenir',
                         ),
-                        outerColor: const Color(0xFFFFA726),
-                        innerColor: const Color(0xFF5D3B1E),
-                        sliderButtonIcon: const Icon(Icons.pest_control_rodent_rounded, color: Colors.white, size: 48),
+                        outerColor: const Color(0xFF65CC32),
+                        innerColor: const Color(0xFF428520),
+                        sliderButtonIcon: const Icon(Icons.pest_control_rodent_rounded,
+                            color: Colors.white, size: 50),
                         elevation: 1,
                         onSubmit: () {
                           Navigator.push(
@@ -103,9 +124,9 @@ class ColeccionesScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
                       SlideAction(
-                        height: 90,
+                        height: 100,
                         text: 'SSEI',
                         textStyle: const TextStyle(
                           color: Colors.white,
@@ -115,7 +136,8 @@ class ColeccionesScreen extends StatelessWidget {
                         ),
                         outerColor: const Color(0xFFF44336),
                         innerColor: const Color(0xFF651919),
-                        sliderButtonIcon: const Icon(Icons.local_fire_department, color: Colors.white, size: 48),
+                        sliderButtonIcon: const Icon(Icons.local_fire_department,
+                            color: Colors.white, size: 50),
                         elevation: 1,
                         onSubmit: () {
                           Navigator.push(

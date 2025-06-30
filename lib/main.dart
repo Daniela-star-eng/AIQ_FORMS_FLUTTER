@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'forms_select_fauna.dart';
 import 'dart:ui'; // Para ImageFilter
 import 'package:slide_to_act/slide_to_act.dart';
+import 'package:interfaz_uno_aiq/login-department.dart';
+import 'forms_select_ops.dart';
+import 'forms_select_ssei.dart';
+import 'Admin_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -100,29 +104,30 @@ class WelcomeScreen extends StatelessWidget {
               ),
               SizedBox(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 2.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 45.0),
                   child: SlideAction(
+                    height: 75, // Altura del slider
                     text: 'COMENZAR',
                     textStyle: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 23,
                       fontFamily: 'Avenir',
                       color: Colors.white,
                     ),
-                    outerColor: const Color(0xFF1F3A5F),
-                    innerColor: const Color(0xFF598CBC),
+                    outerColor: const Color(0xFF598CBC),
+                    innerColor: const Color(0xFF1F3A5F),
                     onSubmit: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ColeccionesScreen(),
+                          builder: (context) => const LoginDepartmentPage(),
                         ),
                       );
                     },
                     elevation: 1,
                     sliderButtonIcon: Transform.rotate(
                       angle: 1.5708, // 90 grados en radianes
-                      child: const Icon(Icons.airplanemode_active_sharp, color: Colors.white),
+                      child: const Icon(Icons.airplanemode_active_sharp, color: Colors.white, size: 30),
                     ),
                   ),
                 ),

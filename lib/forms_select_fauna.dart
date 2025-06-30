@@ -121,7 +121,7 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color(0xFF598CBC),
+                      color: Color.fromARGB(255, 89, 188, 91),
                     ),
                   ),
                 ],

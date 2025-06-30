@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-003.dart';
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-005.dart';
-import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F008.dart';
-import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F007.dart';
-import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F005.dart';
-import 'OPS/derrames.dart'; // Asegúrate de tener este archivo creado con el widget DerramesScreen
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-003.dart';
-import 'package:interfaz_uno_aiq/OPS/derrames.dart' as derrames_lib; // Asegúrate de tener este archivo creado con el widget DerramesScreen
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-004.dart';
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-001.dart';
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-002.dart';
+import 'package:interfaz_uno_aiq/SSEI/AIQ-SSEI-F002.dart';
+
+// Cambia los colores rojos por azules
+// Puedes ajustar los tonos de azul según tu preferencia
+
+// Ejemplo de azul principal
+const azulPrincipal = Color(0xFF598CBC);
+const azulOscuro = Color(0xFF263A5B);
 
 class FormularioScreenSSEI extends StatefulWidget {
   const FormularioScreenSSEI({super.key});
@@ -22,53 +19,20 @@ class FormularioScreenSSEI extends StatefulWidget {
 class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
   final List<Map<String, String>> formularios = const [
     {
-      "titulo": "NEUTRALIZACION Y LIMPIEZA DE DERRAMES",
-      "codigo": "AIQ-F013-OPS",
-      "imagen": "assets/AIQ-OPS-F013-FORM-PREVIEW.jpg",
+      "titulo": "PARTE DE NOVEDADES - BITACORA - CAMBIO DE TURNO",
+      "codigo": "AIQ-SSEI-F002",
+      "imagen": "assets/AIQ-SSEI-F002-FORM-PREVIEW.jpg",
     },
     {
-      "titulo": "VERIFICACION CONTINUA",
-      "codigo": "AIQ-OPS-F008",
-      "imagen": "assets/AIQ-OPS-F008-FORM-PREVIEW.jpg",
+      "titulo": "FORM 8",
+      "codigo": "AIQ-SSEI-F002-2",
+      "imagen": "assets/AIQ-SSEI-F003-FORM-PREVIEW.jpg",
     },
-     {
-      "titulo": "VERIFICACION DIARIA",
-      "codigo": "AIQ-OPS-F007",
-      "imagen": "assets/AIQ-OPS-F007-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "VERIFICACION PREVENCION DE INCURSIONES",
-      "codigo": "AIQ-OPS-F005",
-      "imagen": "assets/AIQ-OPS-F005-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "MONITOREO DE RESTOS DE FAUNA EN AREAS OPERATIVAS",
-      "codigo": "AIQ-AMB-F-003",
-      "imagen": "assets/AIQ-AMB-F-003-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "NUEVO FORMULARIO",
-      "codigo": "AIQ-AMB-F-004",
-      "imagen": "assets/AIQ-AMB-F-004-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "Formulario Fauna",
-      "codigo": "AIQ-AMB-F-001",
-      "imagen": "assets/AIQ-AMB-F-001-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "FORMULARIO DE FAUNA Y HABITAD",
-      "codigo": "AIQ-AMB-F-002",
-      "imagen": "assets/AIQ-AMB-F-002-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "MONITOREO DE AERONAVES",
-      "codigo": "AIQ-AMB-F-005",
-      "imagen": "assets/AIQ-AMB-F-005-FORM-PREVIEW.jpg",
-    }
+     
   ];
 
   int _currentIndex = 0;
+  int _selectedMenu = 0; // <-- Nuevo índice para el menú
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +79,7 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
                 child: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   size: 18,
-                  color: Color(0xFF103A63),
+                  color: azulPrincipal, // Cambiado a azul
                 ),
               ),
             ),
@@ -123,9 +87,9 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
 
           // Título
           Positioned(
-            top: 80,
+            top: 50,
             left: 60,
-            right: 50,
+            right: 0,
             child: RichText(
               textAlign: TextAlign.left,
               text: const TextSpan(
@@ -136,22 +100,35 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color(0xFF263A5B),
+                      color: azulOscuro, // Cambiado a azul oscuro
                     ),
                   ),
                   TextSpan(
-                    text: "FORMULARIO",
+                    text: "FORMULARIO\n",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color(0xFF598CBC),
+                      color: azulPrincipal, // Cambiado a azul principal
+                    ),
+                  ),
+                  TextSpan(
+                    text: "SSEI",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Avenir',
+                      color: azulOscuro, // Cambiado a azul oscuro
                     ),
                   ),
                 ],
               ),
             ),
           ),
+
+
+        
+          
           
           // Carrusel
           Center(
@@ -180,49 +157,9 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
                         if (index == 0) {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const derrames_lib.DerramesScreen()),
+                            MaterialPageRoute(builder: (context) => const AIQSSEIF002Screen()),
                           );
-                        } else if (index == 1) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQOPSF008Screen()),
-                          );
-                        } else if (index == 2) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQOPSF007Screen()),
-                          );
-                        } else if (index == 3) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQOPSF005Screen()),
-                          );
-                        } else if (index == 4) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF003Screen()),
-                          );
-                        } else if (index == 5) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF004Screen()),
-                          );
-                        } else if (index == 6) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF001Screen()),
-                          );
-                        } else if (index == 7) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF002Screen()),
-                          );
-                        } else if (index == 8) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AIQAMBF005Screen()),
-                          );
-                        }
+                        } 
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
@@ -248,7 +185,7 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == index
-                            ? const Color(0xFF103A63)
+                            ? azulOscuro // Cambiado a azul oscuro
                             : Colors.grey[300],
                       ),
                     );
@@ -256,19 +193,39 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
                 ),
                 // Footer TBIB
                 const SizedBox(height: 24),
-                const Text(
-                  "Llenar formulario.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
+                
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedMenu,
+        onTap: (index) {
+          setState(() {
+        _selectedMenu = index;
+          });
+          if (index == 1) {
+        // Aquí puedes navegar a la pantalla de historial o mostrar un mensaje
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Historial de registros')),
+        );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+        icon: Icon(Icons.home),
+        label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+        icon: Icon(Icons.history),
+        label: 'Historial',
+          ),
+        ],
+        selectedItemColor: azulPrincipal, // Cambiado a azul principal
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        elevation: 8,
       ),
     );
   }
