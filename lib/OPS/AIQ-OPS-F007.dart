@@ -402,76 +402,75 @@ Future<int> obtenerConsecutivoParaFecha(DateTime fecha) async{
                     "Grietas / Fragmentaciones / Elevaciones",
                     "Grava / Escombros / Etc.",
                     "Acumulación de caucho",
-                    "Charcas / represas del borde",
+                    "Tapas de luces de registros",
+                    "Inspeción área de maniobras",
                     "Observaciones"
                   ]),
                   buildSeccion("FRANJAS DE SEGURIDAD", [
-                    "Surcos / montesillos / erosión",
-                    "Drenaje / construcciones",
-                    "Objetos / bases al ras del terreno",
+                    "Vegetación",
+                    "Dren pluvial",
+                    "Surcos, piedras y/o condición del terreno ",
                     "Observaciones"
                   ]),
                   buildSeccion("SEÑALES Y LETREROS", [
                     "Visible de acuerdo con normas",
-                    "Punto de espera en rodaje",
-                    "Señales",
-                    "Letreros frangibles",
+                    "Puntos de espera antes pista",
+                    "Limpieza",
+                    "Pintura",
                     "Observaciones"
                   ]),
                   buildSeccion("ILUMINACIÓN", [
                     "Obstruidas / sucias / desteñidas...",
                     "Dañada / faltante...",
                     "Inoperante",
-                    "Orientación inadecuada / ajuste",
+                    "Orientación inadecuada",
                     "Observaciones"
                   ]),
                   buildSeccion("AYUDAS A LA NAVEGACIÓN", [
-                    "Conos de viento",
+                    "Indicador de viento",
                     "Sistema PAPI",
                     "Observaciones"
                   ]),
-                  buildSeccion("OBSTRUCCIONES", [
-                    "Luces de abstracción",
-                    "Grúas / árboles",
+                  buildSeccion("OBSTACULOS, SLO", [
+                    "Balizamiento",
+                    "Obstáculos no autorizados",
+                    "Edificios existentes con balizamiento",
                     "Observaciones"
                   ]),
                   buildSeccion("OPERACIONES DE ABASTECIMIENTO DE COMBUSTIBLE", [
-                    "Cercado / puertas / señales",
-                    "Marcas / etiquetas / señales",
-                    "Extintores de incendios",
-                    "Conexiones a tierra",
-                    "Fugas de combustible / vegetación",
+                    "Balizamiento",
+                    "Conexión a tierra",
+                    "Ruta de escape",
+                    "Condiciones de unidad/ operador",
+                    "EPP",
                     "Observaciones"
                   ]),
-                  buildSeccion("HIELO", [
-                    "Condiciones de la superficie",
-                    "Libres de amontonamiento de hielo",
-                    "Obstrucción de luces y señales",
-                    "Acceso de radio ayuda",
-                    "Acceso al CREL",
+                  buildSeccion("VEHICULOS, PERSONAL OPERATIVO", [
+                    "EPP",
+                    "AV vigente",
+                    "TPV vigente",
+                    "Equipos en optimas condiciones",
+                    "Balizamiento",
+                    "Personal o equipos no autorizados",
                     "Observaciones"
                   ]),
-                  buildSeccion("CONSTRUCCIÓN", [
-                    "Barricas / luces",
-                    "Estacionamiento de equipo",
+                  buildSeccion("OBRAS", [
+                    "Balizamiento",
+                    "Equipo en optimas condiciones",
                     "Observaciones"
                   ]),
                   buildSeccion("SEI", [
-                    "Equipo / disponibilidad de personal",
+                    "Equipo operativo personal",
                     "Comunicaciones / alarma",
+                    "Animales muertos",
                     "Observaciones"
                   ]),
                   buildSeccion("PELIGROS DE LA FAUNA", [
-                    "Animales muertos",
-                    "Presencia de animales",
-                    "Presencia de aves",
+                    "Presencia de fauna",
+                    "impactos",
                     "Observaciones"
                   ]),
-                  buildSeccion("ACCESOS INFORME", [
-                    "LIL",
-                    "CP",
-                    "Observaciones"
-                  ]),
+                  
 
                   const SizedBox(height: 20),
 

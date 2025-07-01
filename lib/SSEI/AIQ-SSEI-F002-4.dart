@@ -1,5 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
 
 class BitacoraScreen extends StatefulWidget {
   @override
@@ -24,7 +29,7 @@ class _BitacoraScreenState extends State<BitacoraScreen> {
   }
 
   String _formatHora(TimeOfDay? hora) {
-    if (hora == null) return "Seleccionar hora";
+    if (hora == null) return "Hora";
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, hora.hour, hora.minute);
     return DateFormat('hh:mm a').format(dt);
@@ -51,9 +56,39 @@ class _BitacoraScreenState extends State<BitacoraScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Actividades registradas")),
       );
+
+      _generarPdf(); // Generar y mostrar PDF
     }
   }
-  
+
+  Future<void> _generarPdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          pw.Header(
+            level: 0,
+            child: pw.Text('Bitácora de Actividades', style: pw.TextStyle(fontSize: 24)),
+          ),
+          pw.Table.fromTextArray(
+            headers: ['Hora', 'Descripción'],
+            data: List.generate(horas.length, (i) {
+              final hora = horas[i] != null
+                  ? _formatHora(horas[i])
+                  : 'Sin hora';
+              final desc = descripciones[i].text.trim();
+              return [hora, desc];
+            }),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
 
   Widget _buildActividadItem(int index) {
     return Container(
@@ -200,18 +235,18 @@ class _BitacoraScreenState extends State<BitacoraScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 100), // espacio para no tapar con el logo
+                  const SizedBox(height: 140),
                 ],
               ),
             ),
           ),
 
-          // Logo en la esquina inferior izquierda
+          // Logo
           Positioned(
             bottom: 16,
-            left: 16,
+            right: 16,
             child: SizedBox(
-              width: 60,
+              width: 150,
               height: 60,
               child: Image.asset(
                 'assets/AIQ_LOGO_.png',

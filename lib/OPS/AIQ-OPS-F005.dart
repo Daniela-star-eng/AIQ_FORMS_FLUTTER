@@ -1508,4 +1508,4 @@ void limpiarCampos() {
 
 //revisar lo de observaciones y fotos 
 //por que se limpia el formulario cuando se toma una 
-//foto y quitarle las validaciones a observaciones. 
+//foto y quitarle las validaciones a observaciones.

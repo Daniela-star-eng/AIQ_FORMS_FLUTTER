@@ -26,7 +26,7 @@ class _FormularioScreenSSEIState extends State<FormularioScreenSSEI> {
     {
       "titulo": "FORM 8",
       "codigo": "AIQ-SSEI-F002-2",
-      "imagen": "assets/AIQ-SSEI-F003-FORM-PREVIEW.jpg",
+      "imagen": "assets/AIQ-SSEI-F002-FORM-PREVIEW.jpg",
     },
      
   ];

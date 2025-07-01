@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-003.dart';
 import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-005.dart';
-import 'OPS/derrames.dart'; // Asegúrate de tener este archivo creado con el widget DerramesScreen
-import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-003.dart';
 import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-004.dart';
 import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-001.dart';
 import 'package:interfaz_uno_aiq/FAUNA/AIQ-AMB-F-002.dart';
+
+const azulPrincipal = Color(0xFF598CBC);
+const azulOscuro = Color(0xFF263A5B);
 
 class FormularioScreenFauna extends StatefulWidget {
   const FormularioScreenFauna({super.key});
@@ -16,7 +17,7 @@ class FormularioScreenFauna extends StatefulWidget {
 }
 
 class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
-  final List<Map<String, String>> formularios = const [
+final List<Map<String, String>> formularios = const [
     {
       "titulo": "MONITOREO DE RESTOS DE FAUNA EN AREAS OPERATIVAS",
       "codigo": "AIQ-AMB-F-003",
@@ -44,7 +45,9 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
     }
   ];
 
+
   int _currentIndex = 0;
+  int _selectedMenu = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +55,7 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Stack(
         children: [
-          // Fondo decorativo
+          // Fondo decorativo (puedes cambiar la imagen)
           Positioned(
             bottom: -180,
             left: -400,
@@ -91,7 +94,7 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
                 child: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   size: 18,
-                  color: Color(0xFF103A63),
+                  color: azulPrincipal,
                 ),
               ),
             ),
@@ -99,9 +102,9 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
 
           // Título
           Positioned(
-            top: 80,
+            top: 50,
             left: 60,
-            right: 50,
+            right: 0,
             child: RichText(
               textAlign: TextAlign.left,
               text: const TextSpan(
@@ -112,29 +115,38 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color(0xFF263A5B),
+                      color: azulOscuro,
                     ),
                   ),
                   TextSpan(
-                    text: "FORMULARIO",
+                    text: "FORMULARIO\n",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color.fromARGB(255, 89, 188, 91),
+                      color: azulPrincipal,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "AMB",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Avenir',
+                      color: azulOscuro,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           // Carrusel
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 100), // Espacio entre el título y el carrusel
+                const SizedBox(height: 100),
                 CarouselSlider.builder(
                   itemCount: formularios.length,
                   options: CarouselOptions(
@@ -148,8 +160,7 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
                         _currentIndex = index;
                       });
                     },
-                  ),
-                  itemBuilder: (context, index, realIndex) {
+                  ), itemBuilder: (context, index, realIndex) {
                     final form = formularios[index];
                     return GestureDetector(
                       onTap: () {
@@ -204,27 +215,44 @@ class _FormularioScreenFaunaState extends State<FormularioScreenFauna> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == index
-                            ? const Color(0xFF103A63)
+                            ? azulOscuro
                             : Colors.grey[300],
                       ),
                     );
                   }),
                 ),
-                // Footer TBIB
                 const SizedBox(height: 24),
-                const Text(
-                  "Llenar formulario.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedMenu,
+        onTap: (index) {
+          setState(() {
+            _selectedMenu = index;
+          });
+          if (index == 1) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Historial de registros')),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historial',
+          ),
+        ],
+        selectedItemColor: azulPrincipal,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        elevation: 8,
       ),
     );
   }

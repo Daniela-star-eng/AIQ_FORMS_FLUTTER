@@ -35,7 +35,7 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
   DateTime? fechaHoraNotificacion;
   TimeOfDay? horaLlegada;
 
-  final SignatureController firmaController = SignatureController(penStrokeWidth: 2, penColor: Color(0xFF263A5B));
+  final SignatureController firmaController = SignatureController(penStrokeWidth: 2, penColor: const Color(0xFF263A5B));
 
   final _formKey = GlobalKey<FormState>();
   bool _errorEspecie = false;
@@ -412,13 +412,6 @@ class _FaunaScreenState extends State<AIQAMBF003Screen> {
     return snapshot.docs.length + 1;
   }
 
-  String _nombreMes(int mes) {
-    const meses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return meses[mes - 1];
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,6 @@ class _AIQSSEIF0023ScreenState extends State<AIQSSEIF0023Screen> {
   final TextEditingController campo2Controller = TextEditingController();
 
   bool _errorCampo1 = false;
-  bool _errorCampo2 = false;
 
   String? _oficinaComandanciaSeleccion = '';
   String? _oficinaGuardiaSeleccion = '';

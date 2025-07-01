@@ -4,7 +4,6 @@ import 'package:interfaz_uno_aiq/coleccion.dart';
 import 'package:interfaz_uno_aiq/forms_select_ssei.dart';
 import 'package:interfaz_uno_aiq/forms_select_fauna.dart';
 import 'package:interfaz_uno_aiq/forms_select_ops.dart';
-import 'package:interfaz_uno_aiq/Admin_view.dart';
 import 'package:interfaz_uno_aiq/coleccion.dart';
 
 class UpperCaseTextFormatter extends TextInputFormatter {

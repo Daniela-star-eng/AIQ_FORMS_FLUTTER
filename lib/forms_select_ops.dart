@@ -3,27 +3,25 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F008.dart';
 import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F007.dart';
 import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F005.dart';
-import 'OPS/derrames.dart'; // Asegúrate de tener este archivo creado con el widget DerramesScreen
-import 'package:interfaz_uno_aiq/OPS/derrames.dart' as derrames_lib; // Asegúrate de tener este archivo creado con el widget DerramesScreen
+import 'OPS/AIQ-OPS-F013.dart'; // Asegúrate de tener este archivo creado con el widget DerramesScreen
+import 'package:interfaz_uno_aiq/OPS/AIQ-OPS-F013.dart' as derrames_lib; // Asegúrate de tener este archivo creado con el widget DerramesScreen
+
+const azulPrincipal = Color(0xFF598CBC);
+const azulOscuro = Color(0xFF263A5B);
 
 class FormularioScreenOPS extends StatefulWidget {
   const FormularioScreenOPS({super.key});
 
   @override
-  State<FormularioScreenOPS> createState() => _FormularioScreenState();
+  State<FormularioScreenOPS> createState() => _FormularioScreenOPSState();
 }
 
-class _FormularioScreenState extends State<FormularioScreenOPS> {
-  final List<Map<String, String>> formularios = const [
-    {
-      "titulo": "NEUTRALIZACION Y LIMPIEZA DE DERRAMES",
-      "codigo": "AIQ-F013-OPS",
-      "imagen": "assets/AIQ-OPS-F013-FORM-PREVIEW.jpg",
-    },
-    {
-      "titulo": "VERIFICACION CONTINUA",
-      "codigo": "AIQ-OPS-F008",
-      "imagen": "assets/AIQ-OPS-F008-FORM-PREVIEW.jpg",
+class _FormularioScreenOPSState extends State<FormularioScreenOPS> {
+ final List<Map<String, String>> formularios = const [
+     {
+      "titulo": "VERIFICACION PREVENCION DE INCURSIONES",
+      "codigo": "AIQ-OPS-F005",
+      "imagen": "assets/AIQ-OPS-F005-FORM-PREVIEW.jpg",
     },
      {
       "titulo": "VERIFICACION DIARIA",
@@ -31,13 +29,14 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
       "imagen": "assets/AIQ-OPS-F007-FORM-PREVIEW.jpg",
     },
     {
-      "titulo": "VERIFICACION PREVENCION DE INCURSIONES",
-      "codigo": "AIQ-OPS-F005",
-      "imagen": "assets/AIQ-OPS-F005-FORM-PREVIEW.jpg",
+      "titulo": "NEUTRALIZACION Y LIMPIEZA DE DERRAMES",
+      "codigo": "AIQ-F013-OPS",
+      "imagen": "assets/AIQ-OPS-F013-FORM-PREVIEW.jpg",
     }
       ];
 
   int _currentIndex = 0;
+  int _selectedMenu = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,7 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Stack(
         children: [
-          // Fondo decorativo
+          // Fondo decorativo (puedes cambiar la imagen)
           Positioned(
             bottom: -180,
             left: -400,
@@ -84,7 +83,7 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
                 child: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   size: 18,
-                  color: Color(0xFF103A63),
+                  color: azulPrincipal,
                 ),
               ),
             ),
@@ -92,9 +91,9 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
 
           // Título
           Positioned(
-            top: 80,
+            top: 50,
             left: 60,
-            right: 50,
+            right: 0,
             child: RichText(
               textAlign: TextAlign.left,
               text: const TextSpan(
@@ -105,29 +104,38 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color(0xFF263A5B),
+                      color: azulOscuro,
                     ),
                   ),
                   TextSpan(
-                    text: "FORMULARIO",
+                    text: "FORMULARIO\n",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Avenir',
-                      color: Color(0xFF598CBC),
+                      color: azulPrincipal,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "OPS",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Avenir',
+                      color: azulOscuro,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           // Carrusel
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 100), // Espacio entre el título y el carrusel
+                const SizedBox(height: 100),
                 CarouselSlider.builder(
                   itemCount: formularios.length,
                   options: CarouselOptions(
@@ -142,11 +150,11 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
                       });
                     },
                   ),
-                  itemBuilder: (context, index, realIndex) {
+               itemBuilder: (context, index, realIndex) {
                     final form = formularios[index];
                     return GestureDetector(
                       onTap: () {
-                        if (index == 0) {
+                        if (index == 2) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const derrames_lib.DerramesScreen()),
@@ -154,14 +162,9 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
                         } else if (index == 1) {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const AIQOPSF008Screen()),
-                          );
-                        } else if (index == 2) {
-                          Navigator.push(
-                            context,
                             MaterialPageRoute(builder: (context) => const AIQOPSF007Screen()),
                           );
-                        } else if (index == 3) {
+                        } else if (index == 0) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const AIQOPSF005Screen()),
@@ -192,27 +195,44 @@ class _FormularioScreenState extends State<FormularioScreenOPS> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == index
-                            ? const Color(0xFF103A63)
+                            ? azulOscuro
                             : Colors.grey[300],
                       ),
                     );
                   }),
                 ),
-                // Footer TBIB
                 const SizedBox(height: 24),
-                const Text(
-                  "Llenar formulario.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedMenu,
+        onTap: (index) {
+          setState(() {
+            _selectedMenu = index;
+          });
+          if (index == 1) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Historial de registros')),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historial',
+          ),
+        ],
+        selectedItemColor: azulPrincipal,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        elevation: 8,
       ),
     );
   }
