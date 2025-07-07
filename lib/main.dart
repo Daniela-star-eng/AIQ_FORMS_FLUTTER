@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
-import 'forms_select.dart'; // Ya sin espacio
+import 'package:lottie/lottie.dart';
+import 'login-department.dart';
+import 'internet_check_stub.dart'
+  if (dart.library.html) 'internet_check_web.dart'
+  if (dart.library.io) 'internet_check_mobile.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // <-- Importa tus opciones aquí
 
 void main() {
   runApp(const MainApp());
@@ -10,90 +16,102 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: 'Animación Lottie',
       debugShowCheckedModeBanner: false,
-      home: WelcomeScreen(),
+      home: FutureBuilder(
+        future: Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform, // <-- Usa las opciones aquí
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Muestra animación de carga mientras se inicializa Firebase
+            return Scaffold(
+backgroundColor: const Color(0xFFE8EAF2),
+              body: Center(
+                child: Lottie.asset('assets/avion.json', width: 300, fit: BoxFit.contain),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            // Muestra error si falla la inicialización
+            return Scaffold(
+              body: Center(child: Text('Error al inicializar Firebase: ${snapshot.error}')),
+            );
+          }
+          // Cuando Firebase está listo, muestra tu pantalla normal
+          return const AnimationScreen();
+        },
+      ),
     );
   }
 }
 
-class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+class AnimationScreen extends StatefulWidget {
+  const AnimationScreen({super.key});
+
+  @override
+  State<AnimationScreen> createState() => _AnimationScreenState();
+}
+
+class _AnimationScreenState extends State<AnimationScreen> {
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectionAndNavigate();
+  }
+
+  Future<void> _checkConnectionAndNavigate() async {
+    await Future.delayed(const Duration(seconds: 4));
+
+    bool connected = false;
+
+    try {
+      connected = await hasInternetConnection() == true;
+    } catch (e) {
+      debugPrint('Error checking internet: $e');
+      connected = false;
+    }
+
+    if (!mounted) return;
+
+    if (connected) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginDepartmentPage()),
+      );
+    } else {
+      setState(() {
+        error = "No tienes conexión a Internet.";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/Avion-bg3.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height, // Fuerza altura de pantalla
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: const Color(0xFFE2E4E0),
+      body: Center(
+        child: error == null
+            ? Lottie.asset('assets/avion.json', width: 300, fit: BoxFit.contain)
+            : Column(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'assets/AIQ_LOGO.png',
-                    width: 440,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 450),
+                  const Icon(Icons.error, color: Colors.red, size: 50),
+                  const SizedBox(height: 16),
+                  Text(error!, style: const TextStyle(fontSize: 18)),
+                  const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: const Text(
-      'Bienvenido al Aeropuerto Intercontinental de Querétaro',
-      style: TextStyle(
-        color: Color.fromARGB(255, 35, 50, 88),
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
-        fontFamily: 'Avenir',
-      ),
-    ),
-    backgroundColor: const Color.fromARGB(255, 226, 235, 247), // Fondo azul oscuro
-    elevation: 2,
-    behavior: SnackBarBehavior.floating, // Se despega de la parte inferior
-    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15),
-    ),
-    duration: const Duration(seconds: 3),
-  ),
-);
+                      setState(() => error = null);
+                      _checkConnectionAndNavigate();
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 31, 56, 88),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      'COMENZAR',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        letterSpacing: 1.5,
-                        fontFamily: 'Avenir',
-                      ),
-                    ),
+                    child: const Text('Reintentar'),
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

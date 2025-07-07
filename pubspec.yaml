@@ -11,6 +11,30 @@ dependencies:
     sdk: flutter
   carousel_slider: ^5.0.0
   signature: ^5.4.0
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  firebase_core: ^2.32.0
+  cloud_firestore: ^4.17.2
+  share_plus: ^7.2.1
+  path_provider: ^2.1.2
+  shared_preferences: ^2.5.3
+  image_picker: ^1.0.7
+  syncfusion_flutter_pdfviewer: ^24.1.41
+  file_picker: ^6.1.1
+  excel: ^2.1.0
+  slide_to_act: ^2.0.1
+  open_file: ^3.3.2
+  googleapis: ^13.1.0 
+  googleapis_auth: ^1.4.0
+  google_sign_in: ^6.2.1
+  universal_html: ^2.2.4
+  lottie: ^2.2.0    # <-- Aquí agregué la dependencia
+  connectivity_plus: ^6.1.4
+  internet_connection_checker: ^1.0.0
+  http: ^1.4.0
+  flutter_launcher_icons: ^0.13.1 
+  
+  
 
 dev_dependencies:
   flutter_test:
@@ -21,17 +45,34 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/AIQ_LOGO.png
+    - assets/AIQ_LOGO_.png
     - assets/Avion-one.png
-<<<<<<< HEAD
-    - assets/Avion-bg.png
-    - assets/Avion-bg2.png
-    - assets/Avion-bg3.png
-=======
     - assets/airbus.png
     - assets/derrames_form.png
-    
+    - assets/AIQ-OPS-F008-FORM-PREVIEW.jpg
+    - assets/AIQ-OPS-F013-FORM-PREVIEW.jpg
+    - assets/AIQ-OPS-F007-FORM-PREVIEW.jpg
+    - assets/AIQ-OPS-F005-FORM-PREVIEW.jpg
+    - assets/AIQ-AMB-F-001-FORM-PREVIEW.jpg
+    - assets/AIQ-AMB-F-002-FORM-PREVIEW.jpg
+    - assets/AIQ-AMB-F-004-FORM-PREVIEW.jpg
+    - assets/AIQ-AMB-F-003-FORM-PREVIEW.jpg
+    - assets/AIQ-AMB-F-005-FORM-PREVIEW.jpg
+    - assets/AIQ-SSEI-F002-FORM-PREVIEW.jpg
+    - assets/PLANO_AIQ.pdf
+    - assets/plano.png
+    - assets/foto_random.jpg
+    - assets/avionG.jpg
+    - assets/generica.jpg
+    - assets/FLYS.png
+    - assets/avion.json
+
   fonts:
     - family: Avenir
       fonts:
         - asset: assets/font/AvenirLTStd-Black.otf
+
+flutter_launcher_icons:
+  android: true
+  ios: false # Opcional: desactiva para iOS si solo quieres Android
+  image_path: "assets/icon/AIQFORMS-ICON.png"
