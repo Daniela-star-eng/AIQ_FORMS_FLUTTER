@@ -24,17 +24,15 @@ dependencies:
   excel: ^2.1.0
   slide_to_act: ^2.0.1
   open_file: ^3.3.2
-  googleapis: ^13.1.0 
+  googleapis: ^13.1.0
   googleapis_auth: ^1.4.0
   google_sign_in: ^6.2.1
   universal_html: ^2.2.4
-  lottie: ^2.2.0    # <-- Aquí agregué la dependencia
+  lottie: ^2.2.0
   connectivity_plus: ^6.1.4
   internet_connection_checker: ^1.0.0
   http: ^1.4.0
-  flutter_launcher_icons: ^0.13.1 
-  
-  
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -47,11 +45,9 @@ flutter:
   assets:
     - assets/AIQ_LOGO_.png
     - assets/Avion-one.png
-<<<<<<< HEAD
     - assets/Avion-bg.png
     - assets/Avion-bg2.png
     - assets/Avion-bg3.png
-=======
     - assets/airbus.png
     - assets/derrames_form.png
     - assets/AIQ-OPS-F008-FORM-PREVIEW.jpg
@@ -79,5 +75,5 @@ flutter:
 
 flutter_launcher_icons:
   android: true
-  ios: false # Opcional: desactiva para iOS si solo quieres Android
+  ios: false
   image_path: "assets/icon/AIQFORMS-ICON.png"
